@@ -80,6 +80,28 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
 .nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
 .nav-toggle{display:none}
 
+/* language switcher */
+.lang-switch{position:relative}
+.lang-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:550;color:var(--muted);padding:8px 12px;border-radius:980px;border:1px solid var(--line-strong);background:#fff;transition:.16s var(--ease)}
+.lang-btn:hover{border-color:var(--ink);color:var(--ink)}
+.lang-btn svg{width:15px;height:15px;display:block}
+.lang-btn .chev{font-size:9px;color:var(--faint);transition:.18s var(--ease)}
+.lang-switch.open .chev{transform:rotate(180deg)}
+.lang-menu{position:absolute;right:0;top:calc(100% + 8px);background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:6px;min-width:178px;opacity:0;transform:translateY(-6px) scale(.97);transform-origin:top right;pointer-events:none;transition:.18s var(--ease);z-index:90}
+.lang-menu.on{opacity:1;transform:none;pointer-events:auto}
+.lang-opt{display:flex;align-items:center;gap:10px;width:100%;padding:9px 11px;border-radius:9px;font-size:14px;font-weight:500;color:var(--ink);transition:.14s;text-align:left}
+.lang-opt:hover{background:var(--surface)}
+.lang-opt.on{color:var(--ocean);font-weight:600}
+.lang-opt .flag{font-size:16px;line-height:1}
+.lang-opt .tick{margin-left:auto;color:var(--ocean);font-weight:700}
+
+/* language multi-select (host wizard) */
+.lang-pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.lang-chip{padding:9px 14px;border-radius:980px;border:1px solid var(--line-strong);background:#fff;font-size:13.5px;font-weight:500;color:var(--ink);transition:.16s var(--ease);display:inline-flex;align-items:center;gap:7px}
+.lang-chip:hover{border-color:var(--ink)}
+.lang-chip.on{background:var(--ocean);color:#fff;border-color:var(--ocean)}
+.lang-chip .c{font-size:12px;font-weight:700;opacity:.85}
+
 /* buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:550;padding:10px 18px;border-radius:980px;transition:.18s var(--ease);white-space:nowrap}
 .btn-primary{background:var(--ocean);color:#fff}
@@ -405,42 +427,12 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
       <a href="#/" class="brand"><span class="dot"></span>Vivência</a>
       <div class="nav-links" id="navLinks"></div>
       <div class="nav-right" id="navRight"></div>
-      <button class="nav-toggle btn-ghost btn-sm" onclick="location.hash='#/explore'">Explore</button>
+      <button class="nav-toggle btn-ghost btn-sm" id="navToggle" onclick="location.hash='#/explore'">Explore</button>
     </div>
   </nav>
   <main id="app"></main>
   <footer class="foot">
-    <div class="wrap">
-      <div class="foot-grid">
-        <div>
-          <div class="brand" style="font-size:20px"><span class="dot"></span>Vivência</div>
-          <p class="muted-line" style="margin-top:14px;max-width:34ch">Local experiences across Madeira and mainland Portugal, hosted by verified people who actually live there.</p>
-        </div>
-        <div>
-          <h4>Travel</h4>
-          <a href="#/explore">Explore experiences</a>
-          <a href="#/explore">Madeira</a>
-          <a href="#/explore">Lisbon</a>
-          <a href="#/explore">Porto</a>
-        </div>
-        <div>
-          <h4>Hosting</h4>
-          <a href="#/host">Become a host</a>
-          <a href="#/dashboard">Host dashboard</a>
-          <a href="#/host">How payouts work</a>
-        </div>
-        <div>
-          <h4>Company</h4>
-          <a href="#/">About</a>
-          <a href="#/">Trust and safety</a>
-          <a href="#/auth">Sign in</a>
-        </div>
-      </div>
-      <div class="foot-bottom">
-        <span>© 2026 Vivência. A demo marketplace.</span>
-        <span>Funchal · Lisboa · Porto · Made for the Atlantic</span>
-      </div>
-    </div>
+    <div class="wrap" id="footWrap"></div>
   </footer>
 </div>
 <div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
@@ -451,7 +443,7 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
 /* ============================ STORE ============================ */
 const DB = {
   r(k, d){ try{ const v=localStorage.getItem('viv_'+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
-  w(k, v){ try{ localStorage.setItem('viv_'+k, JSON.stringify(v)); }catch(e){ toast('Storage full, clear some data','err'); } },
+  w(k, v){ try{ localStorage.setItem('viv_'+k, JSON.stringify(v)); }catch(e){ toast(t('storage_full'),'err'); } },
   users(){ return this.r('users',[]); },
   experiences(){ return this.r('experiences',[]); },
   bookings(){ return this.r('bookings',[]); },
@@ -466,6 +458,470 @@ const code = ()=>{ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s='VIV'; for(
 const money = n => '€'+Number(n).toLocaleString('en-IE',{minimumFractionDigits:0,maximumFractionDigits:0});
 const money2 = n => '€'+Number(n).toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2});
 const COMMISSION = 0.15;
+
+/* ============================ I18N ============================ */
+const LANGS=[
+  {code:'en',name:'English',flag:'🇬🇧'},
+  {code:'pt',name:'Português',flag:'🇵🇹'},
+  {code:'fr',name:'Français',flag:'🇫🇷'},
+  {code:'es',name:'Español',flag:'🇪🇸'},
+];
+/* languages a host can offer */
+const HOST_LANGS=['English','Português','Français','Español','Deutsch','Italiano','Nederlands'];
+function detectLang(){
+  const stored=DB.r('lang',null);
+  if(stored && LANGS.some(l=>l.code===stored)) return stored;
+  const navs=(navigator.languages&&navigator.languages.length)?navigator.languages:[navigator.language||'en'];
+  for(const n of navs){ const c=(n||'').slice(0,2).toLowerCase(); if(LANGS.some(l=>l.code===c)) return c; }
+  return 'en';
+}
+let CURRENT_LANG=detectLang();
+const lang=()=>CURRENT_LANG;
+function setLang(c){ if(!LANGS.some(l=>l.code===c))return; CURRENT_LANG=c; DB.w('lang',c); document.documentElement.lang=c; closeModal(); router(); }
+function t(key,vars){
+  const table=T[CURRENT_LANG]||T.en;
+  let s=(table[key]!=null?table[key]:(T.en[key]!=null?T.en[key]:key));
+  if(vars) for(const k in vars){ s=s.split('{'+k+'}').join(vars[k]); }
+  return s;
+}
+const T={
+en:{
+  nav_home:`Home`, nav_explore:`Explore`, nav_host:`Become a host`, nav_signin:`Sign in`, nav_hostcta:`Host with us`,
+  nav_dashboard:`Dashboard`, nav_admin:`Admin desk`, nav_signout:`Sign out`,
+  hero_eyebrow:`Madeira & Portugal`, hero_title:`Do the thing you<br>flew here for.`,
+  hero_lede:`Boat trips, mountain trails, cellar tastings and city walks, run by verified local hosts who know exactly where to take you.`,
+  composer_where:`Where`, composer_where_any:`Anywhere in Portugal`, composer_exp:`Experience`, composer_exp_any:`Any kind`,
+  composer_search:`Search`, composer_search_ph:`sunset, levada, wine...`,
+  trust_verified:`✓ <b>Verified hosts</b> only`, trust_rating:`★ <b>4.8</b> average rating`, trust_cancel:`⚡ Free cancellation`,
+  feat_eyebrow:`Loved right now`, feat_title:`Featured experiences`, feat_seeall:`See all experiences →`,
+  how_eyebrow:`Simple by design`, how_title:`How Vivência works`,
+  how1_t:`Find your experience`, how1_p:`Browse by region or by the kind of day you want. Every listing shows the real host, the group size and an honest price.`,
+  how2_t:`Book in seconds`, how2_p:`Reserve as a guest or with an account. Pick your date, confirm your group, done. Free cancellation on most experiences.`,
+  how3_t:`Meet your host`, how3_p:`You get a verified local who actually lives the place. They handle the logistics so you just show up and enjoy it.`,
+  band_eyebrow:`For local hosts`, band_title:`Turn what you know into income.`,
+  band_p:`List your experience in minutes. We verify you within 24 hours, then send you travellers. One flat 15 percent commission, no listing fees, no surprises.`,
+  band_stat1:`flat commission`, band_stat2:`verification`, band_stat3:`to list`, band_cta:`Start hosting →`,
+  foot_about:`Local experiences across Madeira and mainland Portugal, hosted by verified people who actually live there.`,
+  foot_travel:`Travel`, foot_explore:`Explore experiences`, foot_hosting:`Hosting`, foot_becomehost:`Become a host`,
+  foot_hostdash:`Host dashboard`, foot_payouts:`How payouts work`, foot_company:`Company`, foot_aboutlink:`About`,
+  foot_trust:`Trust and safety`, foot_copy:`© 2026 Vivência. A demo marketplace.`, foot_made:`Funchal · Lisboa · Porto · Made for the Atlantic`,
+  explore_eyebrow:`Explore`, explore_title:`{place}, your way`, explore_defaultplace:`Madeira and Portugal`,
+  explore_search_ph:`Search experiences, places, hosts`, f_region:`Region`, f_all:`All`, f_type:`Type`, f_sort:`Sort`,
+  sort_rating:`Top rated`, sort_pricelow:`Price low to high`, sort_pricehigh:`Price high to low`,
+  found_one:`{n} experience found`, found_many:`{n} experiences found`,
+  empty_title:`No experiences match yet`, empty_p:`Try widening your region or clearing the search.`,
+  card_hostedby:`Hosted by {name}`, per_person:`per person`, reviews:`reviews`,
+  exp_back:`← Back to explore`, exp_reviews_count:`({n} reviews)`,
+  fact_duration:`Duration`, fact_hours:`{n} hours`, fact_group:`Group size`, fact_upto:`Up to {n}`,
+  fact_langs:`Languages`, fact_cancel:`Cancellation`, fact_free24:`Free 24h`,
+  about_title:`About this experience`, included_title:`What is included`, host_title:`Your host`,
+  verified_badge:`✓ Verified`, localhost_fallback:`Local host based in {region}.`, reviews_title:`Reviews`,
+  bk_date:`Date`, bk_guests:`Guests`, bk_freecancel:`Free cancellation`, bk_total:`Total`, book_now:`Book now`,
+  bk_note:`You will not be charged in this demo`, group_max_toast:`Group max is {n}`, pickdate_toast:`Pick a date first`,
+  confirm_title:`Confirm your booking`, modal_fullname:`Full name`, modal_yourname_ph:`Your name`, modal_email:`Email`,
+  booking_as_guest:`Booking as a guest. {signin} to track it in your dashboard.`, guest_signin:`Sign in`,
+  guest_total:`Total to pay`, confirm_btn:`Confirm booking · {amount}`, guest_valid_toast:`Add a valid name and email`,
+  booked_title:`You are booked`, ticket_confirmation:`Confirmation`, ticket_date:`Date`, ticket_guests:`Guests`,
+  ticket_totalpaid:`Total paid`, ticket_host:`Host`, view_dashboard:`View in dashboard`, done:`Done`,
+  booking_confirmed_toast:`Booking confirmed · {code}`,
+  guest_one:`guest`, guests_many:`guests`,
+  auth_welcome:`Welcome back`, auth_create:`Create your account`, auth_sub:`Book faster, track your trips, or manage your hosting.`,
+  auth_signin:`Sign in`, auth_signup:`Sign up`, auth_fullname:`Full name`, auth_name_ph:`Your name`, auth_email:`Email`,
+  auth_password:`Password`, auth_signin_btn:`Sign in`, auth_create_btn:`Create account`, demo_logins:`Demo logins`,
+  demo_traveler:`Traveler`, demo_host:`Host`, demo_admin:`Admin`,
+  auth_fill_toast:`Fill in email and password`, auth_wrong_toast:`Wrong email or password`, auth_signedin_toast:`Signed in as {name}`,
+  auth_addname_toast:`Add your name`, auth_emailexists_toast:`That email already exists`, auth_created_toast:`Account created`, signedout_toast:`Signed out`,
+  host_already_t:`You are already a host`, host_already_p:`Manage your listings and bookings from your dashboard.`, host_already_btn:`Go to host dashboard`,
+  host_admin_t:`Signed in as admin`, host_admin_p:`Use a host or traveler account to apply.`, host_admin_btn:`Open admin desk`,
+  wiz_eyebrow:`Become a host`, wiz_title:`List your experience on Vivência`,
+  wiz_sub:`Five quick steps. We verify you within 24 hours, then you go live. Flat 15 percent commission, nothing to list.`,
+  wiz_step:`Step {n} of 5`, wizlabel_1:`Your account`, wizlabel_2:`About you`, wizlabel_3:`Verification documents`,
+  wizlabel_4:`Your first experience`, wizlabel_5:`Review and submit`,
+  step1_sub:`This is how travellers and our team reach you.`,
+  f_password:`Password`, password_hint:`you will use this to sign in`, f_business:`Business or trading name`, ph_business:`e.g. Atlantic Sailing Co.`,
+  f_nif:`Tax number (NIF)`, hint_optional:`optional`, f_phone:`Phone`, f_base:`Where are you based`,
+  required:`Required`, email_needed:`Valid email needed`, pass_min:`At least 4 characters`,
+  step2_sub:`Travellers book people, not just listings. Tell them who they are meeting.`,
+  f_bio:`Short bio`, ph_bio:`Skipper born in Câmara de Lobos, ten years running private charters...`, bio_msg:`Tell us a little about you`,
+  f_langs:`Languages you host in`, langs_hint:`select all that apply`, f_years:`Years hosting`, f_maincat:`Main category`,
+  step3_sub:`Our team checks these within 24 hours. Nothing goes live until you are approved.`,
+  doc_id_t:`Government ID`, doc_id_d:`Passport or national ID card`, doc_license_t:`Activity licence`, doc_license_d:`Tour, skipper or local activity licence`,
+  doc_ins_t:`Liability insurance`, doc_ins_d:`Public liability cover for your activity`, doc_upload:`Upload document`, doc_formats:`{desc} · PDF, JPG or PNG`,
+  step4_sub:`You can add more later. This one goes live once both you and the listing are approved.`,
+  f_title:`Title`, f_summary:`One line summary`, f_category:`Category`, f_meeting:`Meeting point`, f_price:`Price per person (€)`,
+  f_duration:`Duration (hours)`, f_groupmax:`Max group size`, f_coverimg:`Cover image URL`,
+  msg_enterprice:`Enter a price`, msg_enterduration:`Enter a duration`, msg_entergroup:`Enter a group size`,
+  step5_sub:`Check everything, then send it to our team for verification.`,
+  rl_host:`Host`, rl_business:`Business`, rl_basedin:`Based in`, rl_langs:`Languages`, rl_iddoc:`ID document`,
+  rl_license:`Activity licence`, rl_insurance:`Insurance`, rl_firstlisting:`First listing`, rl_price:`Price`,
+  notuploaded:`Not uploaded`, earn_banner:`A full group on this listing earns you <b>{amount}</b> after our flat 15 percent commission.`,
+  agree_label:`I confirm my documents are genuine and I accept the flat 15 percent commission and host terms.`,
+  back_btn:`← Back`, continue_btn:`Continue →`, submit_app_btn:`Submit application`,
+  upload_all_docs:`Upload all three documents to continue`, uploaded_toast:`Uploaded {name}`, accept_terms_toast:`Please accept the terms to submit`,
+  email_taken_toast:`That email already has an account, sign in first`, app_submitted_title:`Application submitted`,
+  app_submitted_p:`Thanks {name}. Our team will verify your documents and your first listing within <b>24 hours</b>. You will go live the moment you are approved.`,
+  dash_hello:`Hello, {name}`, dash_trav_sub:`Your trips and bookings in one place.`, dash_find:`Find an experience`,
+  stat_totalbookings:`Total bookings`, stat_upcoming:`Upcoming`, stat_totalspent:`Total spent`, stat_becomehost:`Become a host`,
+  start_hosting:`Start hosting →`, your_bookings:`Your bookings`, nobookings_t:`No bookings yet`,
+  nobookings_p:`When you book an experience it shows up here.`, explore_experiences:`Explore experiences`,
+  payout_word:`payout · {fee} fee`, host_dash_sub:`Host dashboard · {base}`,
+  banner_verified:`You are a <b>verified host</b>. New listings still pass a quick content check before going live.`,
+  banner_rejected:`Your application needs changes. Our team left a note, please re submit your documents.`,
+  banner_review:`Your account is <b>under review</b>. We verify within 24 hours. Listings stay hidden until you are approved.`,
+  tab_overview:`Overview`, tab_listings:`Listings`, tab_bookings:`Bookings`, tab_account:`Account`,
+  stat_gross:`Gross sales`, stat_commission:`Commission (15%)`, bookings_word:`{n} bookings`, stat_payout:`Your payout`,
+  platform_fee:`platform fee`, net_toyou:`net to you`, stat_live:`Live listings`, inreview:`{n} in review`,
+  recent_bookings:`Recent bookings`, nobk_host:`No bookings yet. Once a listing is live, bookings land here.`,
+  your_listings:`Your listings`, new_listing:`+ New listing`, verify_first:`Verify your account first`,
+  listings_locked:`You can add new listings once your account is verified.`, nolistings:`No listings yet.`,
+  all_bookings:`All bookings`, account_verification:`Account and verification`, rl_status:`Status`, rl_phone:`Phone`,
+  rl_documents:`Documents`, docs_uploaded:`{n} uploaded`, view_live:`view live →`, awaiting_review:`awaiting review`, needs_changes:`needs changes`,
+  nl_title:`New listing`, nl_price:`Price pp (€)`, nl_dur:`Duration (h)`, nl_max:`Max group`, submit_review:`Submit for review`,
+  nl_note:`New listings are checked before going live`, fill_all_toast:`Fill all fields`, listing_submitted_toast:`Listing submitted for review`,
+  admin_t:`Admin desk`, admin_sub:`Verify hosts, approve listings, watch the numbers.`,
+  atab_hosts:`Host applications`, atab_listings:`Listing review`, atab_bookings:`Bookings`, atab_users:`Users`,
+  stat_revenue:`Platform revenue`, revenue_sub:`15% of {gmv} GMV`, stat_pendinghosts:`Pending hosts`,
+  stat_pendinglistings:`Pending listings`, stat_liveexp:`Live experiences`, hosts_count:`{n} hosts`,
+  noapps_t:`No applications waiting`, noapps_p:`New host applications will appear here for review.`, verified_hosts:`Verified hosts`,
+  nothing_review_t:`Nothing to review`, nothing_review_p:`Pending listings show up here.`, approve:`Approve`, reject:`Reject`,
+  bookings_gross:`{n} bookings · {gmv} gross`, host_verified_pill:`host verified`, host_notverified_pill:`host not verified`,
+  host_label:`Host: {name}`, nodocuments:`No documents`, verifyhost_first:`Verify the host first`,
+  admin_only_toast:`Admin access only`, verified_toast:`{name} verified`, rejected_toast:`Host application rejected`,
+  listing_live_toast:`Listing is live`, listing_rejected_toast:`Listing rejected`, verify_before_toast:`Verify the host before publishing`,
+  nf_title:`Page not found`, nf_p:`That link does not lead anywhere.`, back_home:`Back home`,
+  cat_ocean:`Boat & Ocean`, cat_nature:`Hiking & Nature`, cat_food:`Food & Wine`, cat_culture:`Culture & City`, cat_adventure:`Adventure`,
+  st_live:`live`, st_pending:`pending`, st_rejected:`rejected`, st_verified:`verified`, st_confirmed:`confirmed`, st_cancelled:`cancelled`,
+  role_admin:`admin`, role_host:`host`, role_traveler:`traveler`, storage_full:`Storage full, clear some data`,
+},
+pt:{
+  nav_home:`Início`, nav_explore:`Explorar`, nav_host:`Seja anfitrião`, nav_signin:`Entrar`, nav_hostcta:`Seja anfitrião`,
+  nav_dashboard:`Painel`, nav_admin:`Administração`, nav_signout:`Sair`,
+  hero_eyebrow:`Madeira & Portugal`, hero_title:`Faça aquilo por que<br>veio até aqui.`,
+  hero_lede:`Passeios de barco, trilhos de montanha, provas em caves e passeios pela cidade, com anfitriões locais verificados que sabem exatamente onde o levar.`,
+  composer_where:`Onde`, composer_where_any:`Qualquer lugar em Portugal`, composer_exp:`Experiência`, composer_exp_any:`Qualquer tipo`,
+  composer_search:`Pesquisar`, composer_search_ph:`pôr do sol, levada, vinho...`,
+  trust_verified:`✓ Apenas <b>anfitriões verificados</b>`, trust_rating:`★ <b>4.8</b> de avaliação média`, trust_cancel:`⚡ Cancelamento gratuito`,
+  feat_eyebrow:`Em destaque agora`, feat_title:`Experiências em destaque`, feat_seeall:`Ver todas as experiências →`,
+  how_eyebrow:`Simples por natureza`, how_title:`Como funciona a Vivência`,
+  how1_t:`Encontre a sua experiência`, how1_p:`Procure por região ou pelo tipo de dia que quer. Cada anúncio mostra o anfitrião real, o tamanho do grupo e um preço honesto.`,
+  how2_t:`Reserve em segundos`, how2_p:`Reserve como convidado ou com conta. Escolha a data, confirme o grupo, pronto. Cancelamento gratuito na maioria das experiências.`,
+  how3_t:`Conheça o seu anfitrião`, how3_p:`Tem um local verificado que vive mesmo o lugar. Tratam da logística para que só tenha de aparecer e aproveitar.`,
+  band_eyebrow:`Para anfitriões locais`, band_title:`Transforme o que sabe em rendimento.`,
+  band_p:`Publique a sua experiência em minutos. Verificamo-lo em 24 horas e enviamos-lhe viajantes. Uma comissão única de 15 por cento, sem taxas de publicação, sem surpresas.`,
+  band_stat1:`comissão única`, band_stat2:`verificação`, band_stat3:`para publicar`, band_cta:`Comece a receber →`,
+  foot_about:`Experiências locais na Madeira e em Portugal continental, com pessoas verificadas que vivem realmente lá.`,
+  foot_travel:`Viajar`, foot_explore:`Explorar experiências`, foot_hosting:`Anfitriões`, foot_becomehost:`Seja anfitrião`,
+  foot_hostdash:`Painel de anfitrião`, foot_payouts:`Como funcionam os pagamentos`, foot_company:`Empresa`, foot_aboutlink:`Sobre`,
+  foot_trust:`Confiança e segurança`, foot_copy:`© 2026 Vivência. Um mercado de demonstração.`, foot_made:`Funchal · Lisboa · Porto · Feito para o Atlântico`,
+  explore_eyebrow:`Explorar`, explore_title:`{place}, à sua maneira`, explore_defaultplace:`Madeira e Portugal`,
+  explore_search_ph:`Pesquisar experiências, locais, anfitriões`, f_region:`Região`, f_all:`Tudo`, f_type:`Tipo`, f_sort:`Ordenar`,
+  sort_rating:`Mais bem avaliadas`, sort_pricelow:`Preço crescente`, sort_pricehigh:`Preço decrescente`,
+  found_one:`{n} experiência encontrada`, found_many:`{n} experiências encontradas`,
+  empty_title:`Ainda não há experiências correspondentes`, empty_p:`Tente alargar a região ou limpar a pesquisa.`,
+  card_hostedby:`Anfitrião: {name}`, per_person:`por pessoa`, reviews:`avaliações`,
+  exp_back:`← Voltar a explorar`, exp_reviews_count:`({n} avaliações)`,
+  fact_duration:`Duração`, fact_hours:`{n} horas`, fact_group:`Tamanho do grupo`, fact_upto:`Até {n}`,
+  fact_langs:`Idiomas`, fact_cancel:`Cancelamento`, fact_free24:`Grátis 24h`,
+  about_title:`Sobre esta experiência`, included_title:`O que está incluído`, host_title:`O seu anfitrião`,
+  verified_badge:`✓ Verificado`, localhost_fallback:`Anfitrião local em {region}.`, reviews_title:`Avaliações`,
+  bk_date:`Data`, bk_guests:`Convidados`, bk_freecancel:`Cancelamento gratuito`, bk_total:`Total`, book_now:`Reservar`,
+  bk_note:`Não será cobrado nesta demonstração`, group_max_toast:`O máximo do grupo é {n}`, pickdate_toast:`Escolha primeiro uma data`,
+  confirm_title:`Confirme a sua reserva`, modal_fullname:`Nome completo`, modal_yourname_ph:`O seu nome`, modal_email:`Email`,
+  booking_as_guest:`A reservar como convidado. {signin} para acompanhar no seu painel.`, guest_signin:`Entre`,
+  guest_total:`Total a pagar`, confirm_btn:`Confirmar reserva · {amount}`, guest_valid_toast:`Indique um nome e email válidos`,
+  booked_title:`Reserva confirmada`, ticket_confirmation:`Confirmação`, ticket_date:`Data`, ticket_guests:`Convidados`,
+  ticket_totalpaid:`Total pago`, ticket_host:`Anfitrião`, view_dashboard:`Ver no painel`, done:`Concluir`,
+  booking_confirmed_toast:`Reserva confirmada · {code}`,
+  guest_one:`convidado`, guests_many:`convidados`,
+  auth_welcome:`Bem-vindo de volta`, auth_create:`Crie a sua conta`, auth_sub:`Reserve mais rápido, acompanhe as suas viagens ou faça a gestão do seu negócio.`,
+  auth_signin:`Entrar`, auth_signup:`Registar`, auth_fullname:`Nome completo`, auth_name_ph:`O seu nome`, auth_email:`Email`,
+  auth_password:`Palavra-passe`, auth_signin_btn:`Entrar`, auth_create_btn:`Criar conta`, demo_logins:`Acessos de demonstração`,
+  demo_traveler:`Viajante`, demo_host:`Anfitrião`, demo_admin:`Administrador`,
+  auth_fill_toast:`Preencha o email e a palavra-passe`, auth_wrong_toast:`Email ou palavra-passe incorretos`, auth_signedin_toast:`Sessão iniciada como {name}`,
+  auth_addname_toast:`Indique o seu nome`, auth_emailexists_toast:`Esse email já existe`, auth_created_toast:`Conta criada`, signedout_toast:`Sessão terminada`,
+  host_already_t:`Já é anfitrião`, host_already_p:`Faça a gestão dos seus anúncios e reservas no seu painel.`, host_already_btn:`Ir para o painel de anfitrião`,
+  host_admin_t:`Sessão iniciada como administrador`, host_admin_p:`Use uma conta de anfitrião ou viajante para se candidatar.`, host_admin_btn:`Abrir administração`,
+  wiz_eyebrow:`Seja anfitrião`, wiz_title:`Publique a sua experiência na Vivência`,
+  wiz_sub:`Cinco passos rápidos. Verificamo-lo em 24 horas e fica online. Comissão única de 15 por cento, nada para publicar.`,
+  wiz_step:`Passo {n} de 5`, wizlabel_1:`A sua conta`, wizlabel_2:`Sobre si`, wizlabel_3:`Documentos de verificação`,
+  wizlabel_4:`A sua primeira experiência`, wizlabel_5:`Rever e enviar`,
+  step1_sub:`É assim que os viajantes e a nossa equipa o contactam.`,
+  f_password:`Palavra-passe`, password_hint:`vai usá-la para entrar`, f_business:`Nome comercial ou da empresa`, ph_business:`ex.: Atlantic Sailing Co.`,
+  f_nif:`Número de contribuinte (NIF)`, hint_optional:`opcional`, f_phone:`Telefone`, f_base:`Onde está sediado`,
+  required:`Obrigatório`, email_needed:`É preciso um email válido`, pass_min:`Pelo menos 4 caracteres`,
+  step2_sub:`Os viajantes reservam pessoas, não apenas anúncios. Diga-lhes quem vão conhecer.`,
+  f_bio:`Pequena biografia`, ph_bio:`Skipper nascido em Câmara de Lobos, dez anos a fazer charters privados...`, bio_msg:`Conte-nos um pouco sobre si`,
+  f_langs:`Idiomas em que recebe`, langs_hint:`selecione todos os que se aplicam`, f_years:`Anos como anfitrião`, f_maincat:`Categoria principal`,
+  step3_sub:`A nossa equipa verifica isto em 24 horas. Nada fica online até ser aprovado.`,
+  doc_id_t:`Documento de identificação`, doc_id_d:`Passaporte ou cartão de cidadão`, doc_license_t:`Licença de atividade`, doc_license_d:`Licença de tour, skipper ou atividade local`,
+  doc_ins_t:`Seguro de responsabilidade`, doc_ins_d:`Cobertura de responsabilidade civil para a sua atividade`, doc_upload:`Carregar documento`, doc_formats:`{desc} · PDF, JPG ou PNG`,
+  step4_sub:`Pode adicionar mais tarde. Esta fica online assim que você e o anúncio forem aprovados.`,
+  f_title:`Título`, f_summary:`Resumo numa linha`, f_category:`Categoria`, f_meeting:`Ponto de encontro`, f_price:`Preço por pessoa (€)`,
+  f_duration:`Duração (horas)`, f_groupmax:`Tamanho máximo do grupo`, f_coverimg:`URL da imagem de capa`,
+  msg_enterprice:`Indique um preço`, msg_enterduration:`Indique uma duração`, msg_entergroup:`Indique o tamanho do grupo`,
+  step5_sub:`Verifique tudo e envie à nossa equipa para verificação.`,
+  rl_host:`Anfitrião`, rl_business:`Empresa`, rl_basedin:`Sediado em`, rl_langs:`Idiomas`, rl_iddoc:`Documento de ID`,
+  rl_license:`Licença de atividade`, rl_insurance:`Seguro`, rl_firstlisting:`Primeiro anúncio`, rl_price:`Preço`,
+  notuploaded:`Não carregado`, earn_banner:`Um grupo completo neste anúncio rende-lhe <b>{amount}</b> após a nossa comissão única de 15 por cento.`,
+  agree_label:`Confirmo que os meus documentos são genuínos e aceito a comissão única de 15 por cento e os termos de anfitrião.`,
+  back_btn:`← Voltar`, continue_btn:`Continuar →`, submit_app_btn:`Enviar candidatura`,
+  upload_all_docs:`Carregue os três documentos para continuar`, uploaded_toast:`Carregado {name}`, accept_terms_toast:`Aceite os termos para enviar`,
+  email_taken_toast:`Esse email já tem conta, entre primeiro`, app_submitted_title:`Candidatura enviada`,
+  app_submitted_p:`Obrigado {name}. A nossa equipa irá verificar os seus documentos e o seu primeiro anúncio em <b>24 horas</b>. Fica online assim que for aprovado.`,
+  dash_hello:`Olá, {name}`, dash_trav_sub:`As suas viagens e reservas num só lugar.`, dash_find:`Encontrar uma experiência`,
+  stat_totalbookings:`Total de reservas`, stat_upcoming:`Próximas`, stat_totalspent:`Total gasto`, stat_becomehost:`Seja anfitrião`,
+  start_hosting:`Comece a receber →`, your_bookings:`As suas reservas`, nobookings_t:`Ainda sem reservas`,
+  nobookings_p:`Quando reservar uma experiência, aparece aqui.`, explore_experiences:`Explorar experiências`,
+  payout_word:`pagamento · {fee} de taxa`, host_dash_sub:`Painel de anfitrião · {base}`,
+  banner_verified:`É um <b>anfitrião verificado</b>. Os novos anúncios passam por uma verificação rápida de conteúdo antes de ficarem online.`,
+  banner_rejected:`A sua candidatura precisa de alterações. A nossa equipa deixou uma nota, por favor reenvie os seus documentos.`,
+  banner_review:`A sua conta está <b>em análise</b>. Verificamos em 24 horas. Os anúncios ficam ocultos até ser aprovado.`,
+  tab_overview:`Resumo`, tab_listings:`Anúncios`, tab_bookings:`Reservas`, tab_account:`Conta`,
+  stat_gross:`Vendas brutas`, stat_commission:`Comissão (15%)`, bookings_word:`{n} reservas`, stat_payout:`O seu pagamento`,
+  platform_fee:`taxa da plataforma`, net_toyou:`líquido para si`, stat_live:`Anúncios online`, inreview:`{n} em análise`,
+  recent_bookings:`Reservas recentes`, nobk_host:`Ainda sem reservas. Assim que um anúncio estiver online, as reservas aparecem aqui.`,
+  your_listings:`Os seus anúncios`, new_listing:`+ Novo anúncio`, verify_first:`Verifique primeiro a sua conta`,
+  listings_locked:`Pode adicionar novos anúncios assim que a sua conta for verificada.`, nolistings:`Ainda sem anúncios.`,
+  all_bookings:`Todas as reservas`, account_verification:`Conta e verificação`, rl_status:`Estado`, rl_phone:`Telefone`,
+  rl_documents:`Documentos`, docs_uploaded:`{n} carregados`, view_live:`ver online →`, awaiting_review:`a aguardar análise`, needs_changes:`precisa de alterações`,
+  nl_title:`Novo anúncio`, nl_price:`Preço p/pessoa (€)`, nl_dur:`Duração (h)`, nl_max:`Grupo máx.`, submit_review:`Enviar para análise`,
+  nl_note:`Os novos anúncios são verificados antes de ficarem online`, fill_all_toast:`Preencha todos os campos`, listing_submitted_toast:`Anúncio enviado para análise`,
+  admin_t:`Administração`, admin_sub:`Verifique anfitriões, aprove anúncios, acompanhe os números.`,
+  atab_hosts:`Candidaturas de anfitrião`, atab_listings:`Análise de anúncios`, atab_bookings:`Reservas`, atab_users:`Utilizadores`,
+  stat_revenue:`Receita da plataforma`, revenue_sub:`15% de {gmv} de GMV`, stat_pendinghosts:`Anfitriões pendentes`,
+  stat_pendinglistings:`Anúncios pendentes`, stat_liveexp:`Experiências online`, hosts_count:`{n} anfitriões`,
+  noapps_t:`Sem candidaturas em espera`, noapps_p:`As novas candidaturas de anfitrião aparecem aqui para análise.`, verified_hosts:`Anfitriões verificados`,
+  nothing_review_t:`Nada para analisar`, nothing_review_p:`Os anúncios pendentes aparecem aqui.`, approve:`Aprovar`, reject:`Rejeitar`,
+  bookings_gross:`{n} reservas · {gmv} bruto`, host_verified_pill:`anfitrião verificado`, host_notverified_pill:`anfitrião não verificado`,
+  host_label:`Anfitrião: {name}`, nodocuments:`Sem documentos`, verifyhost_first:`Verifique primeiro o anfitrião`,
+  admin_only_toast:`Acesso apenas de administrador`, verified_toast:`{name} verificado`, rejected_toast:`Candidatura de anfitrião rejeitada`,
+  listing_live_toast:`Anúncio online`, listing_rejected_toast:`Anúncio rejeitado`, verify_before_toast:`Verifique o anfitrião antes de publicar`,
+  nf_title:`Página não encontrada`, nf_p:`Esse link não leva a lado nenhum.`, back_home:`Voltar ao início`,
+  cat_ocean:`Barco & Mar`, cat_nature:`Caminhadas & Natureza`, cat_food:`Comida & Vinho`, cat_culture:`Cultura & Cidade`, cat_adventure:`Aventura`,
+  st_live:`online`, st_pending:`pendente`, st_rejected:`rejeitado`, st_verified:`verificado`, st_confirmed:`confirmada`, st_cancelled:`cancelada`,
+  role_admin:`administrador`, role_host:`anfitrião`, role_traveler:`viajante`, storage_full:`Armazenamento cheio, limpe alguns dados`,
+},
+fr:{
+  nav_home:`Accueil`, nav_explore:`Explorer`, nav_host:`Devenir hôte`, nav_signin:`Se connecter`, nav_hostcta:`Devenir hôte`,
+  nav_dashboard:`Tableau de bord`, nav_admin:`Espace admin`, nav_signout:`Se déconnecter`,
+  hero_eyebrow:`Madère & Portugal`, hero_title:`Faites ce pour quoi<br>vous êtes venu.`,
+  hero_lede:`Sorties en bateau, sentiers de montagne, dégustations en cave et balades en ville, animées par des hôtes locaux vérifiés qui savent exactement où vous emmener.`,
+  composer_where:`Où`, composer_where_any:`Partout au Portugal`, composer_exp:`Expérience`, composer_exp_any:`Tout type`,
+  composer_search:`Rechercher`, composer_search_ph:`coucher de soleil, levada, vin...`,
+  trust_verified:`✓ <b>Hôtes vérifiés</b> uniquement`, trust_rating:`★ <b>4.8</b> de note moyenne`, trust_cancel:`⚡ Annulation gratuite`,
+  feat_eyebrow:`Coups de cœur du moment`, feat_title:`Expériences à la une`, feat_seeall:`Voir toutes les expériences →`,
+  how_eyebrow:`Simple par conception`, how_title:`Comment fonctionne Vivência`,
+  how1_t:`Trouvez votre expérience`, how1_p:`Parcourez par région ou par type de journée. Chaque annonce indique l'hôte réel, la taille du groupe et un prix honnête.`,
+  how2_t:`Réservez en quelques secondes`, how2_p:`Réservez en tant qu'invité ou avec un compte. Choisissez votre date, confirmez votre groupe, c'est fait. Annulation gratuite sur la plupart des expériences.`,
+  how3_t:`Rencontrez votre hôte`, how3_p:`Vous avez un local vérifié qui vit vraiment l'endroit. Il gère la logistique, vous n'avez qu'à venir et en profiter.`,
+  band_eyebrow:`Pour les hôtes locaux`, band_title:`Transformez votre savoir en revenus.`,
+  band_p:`Publiez votre expérience en quelques minutes. Nous vous vérifions sous 24 heures, puis nous vous envoyons des voyageurs. Une commission unique de 15 pour cent, sans frais de publication, sans surprises.`,
+  band_stat1:`commission unique`, band_stat2:`vérification`, band_stat3:`pour publier`, band_cta:`Commencer à héberger →`,
+  foot_about:`Des expériences locales à Madère et au Portugal continental, animées par des personnes vérifiées qui y vivent vraiment.`,
+  foot_travel:`Voyager`, foot_explore:`Explorer les expériences`, foot_hosting:`Hébergement`, foot_becomehost:`Devenir hôte`,
+  foot_hostdash:`Tableau de bord hôte`, foot_payouts:`Comment fonctionnent les paiements`, foot_company:`Entreprise`, foot_aboutlink:`À propos`,
+  foot_trust:`Confiance et sécurité`, foot_copy:`© 2026 Vivência. Une place de marché de démonstration.`, foot_made:`Funchal · Lisbonne · Porto · Fait pour l'Atlantique`,
+  explore_eyebrow:`Explorer`, explore_title:`{place}, à votre façon`, explore_defaultplace:`Madère et le Portugal`,
+  explore_search_ph:`Rechercher expériences, lieux, hôtes`, f_region:`Région`, f_all:`Tout`, f_type:`Type`, f_sort:`Trier`,
+  sort_rating:`Mieux notées`, sort_pricelow:`Prix croissant`, sort_pricehigh:`Prix décroissant`,
+  found_one:`{n} expérience trouvée`, found_many:`{n} expériences trouvées`,
+  empty_title:`Aucune expérience ne correspond encore`, empty_p:`Essayez d'élargir votre région ou d'effacer la recherche.`,
+  card_hostedby:`Animé par {name}`, per_person:`par personne`, reviews:`avis`,
+  exp_back:`← Retour à l'exploration`, exp_reviews_count:`({n} avis)`,
+  fact_duration:`Durée`, fact_hours:`{n} heures`, fact_group:`Taille du groupe`, fact_upto:`Jusqu'à {n}`,
+  fact_langs:`Langues`, fact_cancel:`Annulation`, fact_free24:`Gratuit 24h`,
+  about_title:`À propos de cette expérience`, included_title:`Ce qui est inclus`, host_title:`Votre hôte`,
+  verified_badge:`✓ Vérifié`, localhost_fallback:`Hôte local basé à {region}.`, reviews_title:`Avis`,
+  bk_date:`Date`, bk_guests:`Participants`, bk_freecancel:`Annulation gratuite`, bk_total:`Total`, book_now:`Réserver`,
+  bk_note:`Vous ne serez pas débité dans cette démo`, group_max_toast:`Le maximum du groupe est {n}`, pickdate_toast:`Choisissez d'abord une date`,
+  confirm_title:`Confirmez votre réservation`, modal_fullname:`Nom complet`, modal_yourname_ph:`Votre nom`, modal_email:`Email`,
+  booking_as_guest:`Réservation en tant qu'invité. {signin} pour la suivre dans votre tableau de bord.`, guest_signin:`Connectez-vous`,
+  guest_total:`Total à payer`, confirm_btn:`Confirmer la réservation · {amount}`, guest_valid_toast:`Ajoutez un nom et un email valides`,
+  booked_title:`C'est réservé`, ticket_confirmation:`Confirmation`, ticket_date:`Date`, ticket_guests:`Participants`,
+  ticket_totalpaid:`Total payé`, ticket_host:`Hôte`, view_dashboard:`Voir dans le tableau de bord`, done:`Terminé`,
+  booking_confirmed_toast:`Réservation confirmée · {code}`,
+  guest_one:`participant`, guests_many:`participants`,
+  auth_welcome:`Bon retour`, auth_create:`Créez votre compte`, auth_sub:`Réservez plus vite, suivez vos voyages ou gérez votre activité d'hôte.`,
+  auth_signin:`Se connecter`, auth_signup:`S'inscrire`, auth_fullname:`Nom complet`, auth_name_ph:`Votre nom`, auth_email:`Email`,
+  auth_password:`Mot de passe`, auth_signin_btn:`Se connecter`, auth_create_btn:`Créer un compte`, demo_logins:`Identifiants de démo`,
+  demo_traveler:`Voyageur`, demo_host:`Hôte`, demo_admin:`Admin`,
+  auth_fill_toast:`Saisissez l'email et le mot de passe`, auth_wrong_toast:`Email ou mot de passe incorrect`, auth_signedin_toast:`Connecté en tant que {name}`,
+  auth_addname_toast:`Ajoutez votre nom`, auth_emailexists_toast:`Cet email existe déjà`, auth_created_toast:`Compte créé`, signedout_toast:`Déconnecté`,
+  host_already_t:`Vous êtes déjà hôte`, host_already_p:`Gérez vos annonces et réservations depuis votre tableau de bord.`, host_already_btn:`Aller au tableau de bord hôte`,
+  host_admin_t:`Connecté en tant qu'admin`, host_admin_p:`Utilisez un compte hôte ou voyageur pour postuler.`, host_admin_btn:`Ouvrir l'espace admin`,
+  wiz_eyebrow:`Devenir hôte`, wiz_title:`Publiez votre expérience sur Vivência`,
+  wiz_sub:`Cinq étapes rapides. Nous vous vérifions sous 24 heures, puis vous êtes en ligne. Commission unique de 15 pour cent, rien à payer pour publier.`,
+  wiz_step:`Étape {n} sur 5`, wizlabel_1:`Votre compte`, wizlabel_2:`À propos de vous`, wizlabel_3:`Documents de vérification`,
+  wizlabel_4:`Votre première expérience`, wizlabel_5:`Vérifier et envoyer`,
+  step1_sub:`C'est ainsi que les voyageurs et notre équipe vous contactent.`,
+  f_password:`Mot de passe`, password_hint:`vous l'utiliserez pour vous connecter`, f_business:`Nom commercial ou de l'entreprise`, ph_business:`ex. : Atlantic Sailing Co.`,
+  f_nif:`Numéro fiscal (NIF)`, hint_optional:`facultatif`, f_phone:`Téléphone`, f_base:`Où êtes-vous basé`,
+  required:`Obligatoire`, email_needed:`Un email valide est requis`, pass_min:`Au moins 4 caractères`,
+  step2_sub:`Les voyageurs réservent des personnes, pas seulement des annonces. Dites-leur qui ils vont rencontrer.`,
+  f_bio:`Courte biographie`, ph_bio:`Skipper né à Câmara de Lobos, dix ans de charters privés...`, bio_msg:`Parlez-nous un peu de vous`,
+  f_langs:`Langues dans lesquelles vous recevez`, langs_hint:`sélectionnez toutes celles qui s'appliquent`, f_years:`Années d'hébergement`, f_maincat:`Catégorie principale`,
+  step3_sub:`Notre équipe les vérifie sous 24 heures. Rien n'est mis en ligne avant votre approbation.`,
+  doc_id_t:`Pièce d'identité`, doc_id_d:`Passeport ou carte d'identité nationale`, doc_license_t:`Licence d'activité`, doc_license_d:`Licence de tour, de skipper ou d'activité locale`,
+  doc_ins_t:`Assurance responsabilité`, doc_ins_d:`Couverture de responsabilité civile pour votre activité`, doc_upload:`Téléverser le document`, doc_formats:`{desc} · PDF, JPG ou PNG`,
+  step4_sub:`Vous pourrez en ajouter d'autres plus tard. Celle-ci sera en ligne dès que vous et l'annonce serez approuvés.`,
+  f_title:`Titre`, f_summary:`Résumé en une ligne`, f_category:`Catégorie`, f_meeting:`Point de rencontre`, f_price:`Prix par personne (€)`,
+  f_duration:`Durée (heures)`, f_groupmax:`Taille maximale du groupe`, f_coverimg:`URL de l'image de couverture`,
+  msg_enterprice:`Saisissez un prix`, msg_enterduration:`Saisissez une durée`, msg_entergroup:`Saisissez la taille du groupe`,
+  step5_sub:`Vérifiez tout, puis envoyez-le à notre équipe pour vérification.`,
+  rl_host:`Hôte`, rl_business:`Entreprise`, rl_basedin:`Basé à`, rl_langs:`Langues`, rl_iddoc:`Pièce d'identité`,
+  rl_license:`Licence d'activité`, rl_insurance:`Assurance`, rl_firstlisting:`Première annonce`, rl_price:`Prix`,
+  notuploaded:`Non téléversé`, earn_banner:`Un groupe complet sur cette annonce vous rapporte <b>{amount}</b> après notre commission unique de 15 pour cent.`,
+  agree_label:`Je confirme que mes documents sont authentiques et j'accepte la commission unique de 15 pour cent et les conditions d'hôte.`,
+  back_btn:`← Retour`, continue_btn:`Continuer →`, submit_app_btn:`Envoyer la candidature`,
+  upload_all_docs:`Téléversez les trois documents pour continuer`, uploaded_toast:`{name} téléversé`, accept_terms_toast:`Veuillez accepter les conditions pour envoyer`,
+  email_taken_toast:`Cet email a déjà un compte, connectez-vous d'abord`, app_submitted_title:`Candidature envoyée`,
+  app_submitted_p:`Merci {name}. Notre équipe vérifiera vos documents et votre première annonce sous <b>24 heures</b>. Vous serez en ligne dès votre approbation.`,
+  dash_hello:`Bonjour, {name}`, dash_trav_sub:`Vos voyages et réservations au même endroit.`, dash_find:`Trouver une expérience`,
+  stat_totalbookings:`Total des réservations`, stat_upcoming:`À venir`, stat_totalspent:`Total dépensé`, stat_becomehost:`Devenir hôte`,
+  start_hosting:`Commencer à héberger →`, your_bookings:`Vos réservations`, nobookings_t:`Pas encore de réservations`,
+  nobookings_p:`Lorsque vous réservez une expérience, elle apparaît ici.`, explore_experiences:`Explorer les expériences`,
+  payout_word:`paiement · {fee} de frais`, host_dash_sub:`Tableau de bord hôte · {base}`,
+  banner_verified:`Vous êtes un <b>hôte vérifié</b>. Les nouvelles annonces passent encore un contrôle de contenu rapide avant la mise en ligne.`,
+  banner_rejected:`Votre candidature nécessite des modifications. Notre équipe a laissé une note, veuillez renvoyer vos documents.`,
+  banner_review:`Votre compte est <b>en cours d'examen</b>. Nous vérifions sous 24 heures. Les annonces restent masquées jusqu'à votre approbation.`,
+  tab_overview:`Aperçu`, tab_listings:`Annonces`, tab_bookings:`Réservations`, tab_account:`Compte`,
+  stat_gross:`Ventes brutes`, stat_commission:`Commission (15%)`, bookings_word:`{n} réservations`, stat_payout:`Votre paiement`,
+  platform_fee:`frais de plateforme`, net_toyou:`net pour vous`, stat_live:`Annonces en ligne`, inreview:`{n} en cours d'examen`,
+  recent_bookings:`Réservations récentes`, nobk_host:`Pas encore de réservations. Dès qu'une annonce est en ligne, les réservations arrivent ici.`,
+  your_listings:`Vos annonces`, new_listing:`+ Nouvelle annonce`, verify_first:`Vérifiez d'abord votre compte`,
+  listings_locked:`Vous pourrez ajouter de nouvelles annonces une fois votre compte vérifié.`, nolistings:`Pas encore d'annonces.`,
+  all_bookings:`Toutes les réservations`, account_verification:`Compte et vérification`, rl_status:`Statut`, rl_phone:`Téléphone`,
+  rl_documents:`Documents`, docs_uploaded:`{n} téléversés`, view_live:`voir en ligne →`, awaiting_review:`en attente d'examen`, needs_changes:`modifications requises`,
+  nl_title:`Nouvelle annonce`, nl_price:`Prix p/pers. (€)`, nl_dur:`Durée (h)`, nl_max:`Groupe max.`, submit_review:`Envoyer pour examen`,
+  nl_note:`Les nouvelles annonces sont vérifiées avant la mise en ligne`, fill_all_toast:`Remplissez tous les champs`, listing_submitted_toast:`Annonce envoyée pour examen`,
+  admin_t:`Espace admin`, admin_sub:`Vérifiez les hôtes, approuvez les annonces, suivez les chiffres.`,
+  atab_hosts:`Candidatures d'hôte`, atab_listings:`Examen des annonces`, atab_bookings:`Réservations`, atab_users:`Utilisateurs`,
+  stat_revenue:`Revenu de la plateforme`, revenue_sub:`15% de {gmv} de GMV`, stat_pendinghosts:`Hôtes en attente`,
+  stat_pendinglistings:`Annonces en attente`, stat_liveexp:`Expériences en ligne`, hosts_count:`{n} hôtes`,
+  noapps_t:`Aucune candidature en attente`, noapps_p:`Les nouvelles candidatures d'hôte apparaîtront ici pour examen.`, verified_hosts:`Hôtes vérifiés`,
+  nothing_review_t:`Rien à examiner`, nothing_review_p:`Les annonces en attente apparaissent ici.`, approve:`Approuver`, reject:`Rejeter`,
+  bookings_gross:`{n} réservations · {gmv} brut`, host_verified_pill:`hôte vérifié`, host_notverified_pill:`hôte non vérifié`,
+  host_label:`Hôte : {name}`, nodocuments:`Aucun document`, verifyhost_first:`Vérifiez d'abord l'hôte`,
+  admin_only_toast:`Accès réservé aux admins`, verified_toast:`{name} vérifié`, rejected_toast:`Candidature d'hôte rejetée`,
+  listing_live_toast:`Annonce en ligne`, listing_rejected_toast:`Annonce rejetée`, verify_before_toast:`Vérifiez l'hôte avant de publier`,
+  nf_title:`Page introuvable`, nf_p:`Ce lien ne mène nulle part.`, back_home:`Retour à l'accueil`,
+  cat_ocean:`Bateau & Océan`, cat_nature:`Randonnée & Nature`, cat_food:`Gastronomie & Vin`, cat_culture:`Culture & Ville`, cat_adventure:`Aventure`,
+  st_live:`en ligne`, st_pending:`en attente`, st_rejected:`rejeté`, st_verified:`vérifié`, st_confirmed:`confirmée`, st_cancelled:`annulée`,
+  role_admin:`admin`, role_host:`hôte`, role_traveler:`voyageur`, storage_full:`Stockage plein, libérez de l'espace`,
+},
+es:{
+  nav_home:`Inicio`, nav_explore:`Explorar`, nav_host:`Sé anfitrión`, nav_signin:`Iniciar sesión`, nav_hostcta:`Sé anfitrión`,
+  nav_dashboard:`Panel`, nav_admin:`Administración`, nav_signout:`Cerrar sesión`,
+  hero_eyebrow:`Madeira & Portugal`, hero_title:`Haz aquello por lo<br>que viniste.`,
+  hero_lede:`Paseos en barco, senderos de montaña, catas en bodega y rutas por la ciudad, con anfitriones locales verificados que saben exactamente adónde llevarte.`,
+  composer_where:`Dónde`, composer_where_any:`Cualquier lugar de Portugal`, composer_exp:`Experiencia`, composer_exp_any:`Cualquier tipo`,
+  composer_search:`Buscar`, composer_search_ph:`atardecer, levada, vino...`,
+  trust_verified:`✓ Solo <b>anfitriones verificados</b>`, trust_rating:`★ <b>4.8</b> de valoración media`, trust_cancel:`⚡ Cancelación gratuita`,
+  feat_eyebrow:`Lo más querido ahora`, feat_title:`Experiencias destacadas`, feat_seeall:`Ver todas las experiencias →`,
+  how_eyebrow:`Simple por diseño`, how_title:`Cómo funciona Vivência`,
+  how1_t:`Encuentra tu experiencia`, how1_p:`Explora por región o por el tipo de día que quieras. Cada anuncio muestra el anfitrión real, el tamaño del grupo y un precio honesto.`,
+  how2_t:`Reserva en segundos`, how2_p:`Reserva como invitado o con cuenta. Elige tu fecha, confirma tu grupo, listo. Cancelación gratuita en la mayoría de experiencias.`,
+  how3_t:`Conoce a tu anfitrión`, how3_p:`Tienes un local verificado que vive de verdad el lugar. Se encarga de la logística para que solo tengas que llegar y disfrutar.`,
+  band_eyebrow:`Para anfitriones locales`, band_title:`Convierte lo que sabes en ingresos.`,
+  band_p:`Publica tu experiencia en minutos. Te verificamos en 24 horas y te enviamos viajeros. Una comisión única del 15 por ciento, sin tarifas de publicación, sin sorpresas.`,
+  band_stat1:`comisión única`, band_stat2:`verificación`, band_stat3:`para publicar`, band_cta:`Empieza a recibir →`,
+  foot_about:`Experiencias locales en Madeira y el Portugal continental, con personas verificadas que viven realmente allí.`,
+  foot_travel:`Viajar`, foot_explore:`Explorar experiencias`, foot_hosting:`Anfitriones`, foot_becomehost:`Sé anfitrión`,
+  foot_hostdash:`Panel de anfitrión`, foot_payouts:`Cómo funcionan los pagos`, foot_company:`Empresa`, foot_aboutlink:`Acerca de`,
+  foot_trust:`Confianza y seguridad`, foot_copy:`© 2026 Vivência. Un mercado de demostración.`, foot_made:`Funchal · Lisboa · Oporto · Hecho para el Atlántico`,
+  explore_eyebrow:`Explorar`, explore_title:`{place}, a tu manera`, explore_defaultplace:`Madeira y Portugal`,
+  explore_search_ph:`Buscar experiencias, lugares, anfitriones`, f_region:`Región`, f_all:`Todo`, f_type:`Tipo`, f_sort:`Ordenar`,
+  sort_rating:`Mejor valoradas`, sort_pricelow:`Precio ascendente`, sort_pricehigh:`Precio descendente`,
+  found_one:`{n} experiencia encontrada`, found_many:`{n} experiencias encontradas`,
+  empty_title:`Aún no hay experiencias que coincidan`, empty_p:`Prueba a ampliar tu región o a borrar la búsqueda.`,
+  card_hostedby:`Anfitrión: {name}`, per_person:`por persona`, reviews:`reseñas`,
+  exp_back:`← Volver a explorar`, exp_reviews_count:`({n} reseñas)`,
+  fact_duration:`Duración`, fact_hours:`{n} horas`, fact_group:`Tamaño del grupo`, fact_upto:`Hasta {n}`,
+  fact_langs:`Idiomas`, fact_cancel:`Cancelación`, fact_free24:`Gratis 24h`,
+  about_title:`Sobre esta experiencia`, included_title:`Qué incluye`, host_title:`Tu anfitrión`,
+  verified_badge:`✓ Verificado`, localhost_fallback:`Anfitrión local en {region}.`, reviews_title:`Reseñas`,
+  bk_date:`Fecha`, bk_guests:`Personas`, bk_freecancel:`Cancelación gratuita`, bk_total:`Total`, book_now:`Reservar`,
+  bk_note:`No se te cobrará en esta demo`, group_max_toast:`El máximo del grupo es {n}`, pickdate_toast:`Elige primero una fecha`,
+  confirm_title:`Confirma tu reserva`, modal_fullname:`Nombre completo`, modal_yourname_ph:`Tu nombre`, modal_email:`Email`,
+  booking_as_guest:`Reservando como invitado. {signin} para seguirla en tu panel.`, guest_signin:`Inicia sesión`,
+  guest_total:`Total a pagar`, confirm_btn:`Confirmar reserva · {amount}`, guest_valid_toast:`Añade un nombre y email válidos`,
+  booked_title:`Reserva confirmada`, ticket_confirmation:`Confirmación`, ticket_date:`Fecha`, ticket_guests:`Personas`,
+  ticket_totalpaid:`Total pagado`, ticket_host:`Anfitrión`, view_dashboard:`Ver en el panel`, done:`Hecho`,
+  booking_confirmed_toast:`Reserva confirmada · {code}`,
+  guest_one:`persona`, guests_many:`personas`,
+  auth_welcome:`Bienvenido de nuevo`, auth_create:`Crea tu cuenta`, auth_sub:`Reserva más rápido, sigue tus viajes o gestiona tu actividad como anfitrión.`,
+  auth_signin:`Iniciar sesión`, auth_signup:`Registrarse`, auth_fullname:`Nombre completo`, auth_name_ph:`Tu nombre`, auth_email:`Email`,
+  auth_password:`Contraseña`, auth_signin_btn:`Iniciar sesión`, auth_create_btn:`Crear cuenta`, demo_logins:`Accesos de demo`,
+  demo_traveler:`Viajero`, demo_host:`Anfitrión`, demo_admin:`Admin`,
+  auth_fill_toast:`Rellena el email y la contraseña`, auth_wrong_toast:`Email o contraseña incorrectos`, auth_signedin_toast:`Sesión iniciada como {name}`,
+  auth_addname_toast:`Añade tu nombre`, auth_emailexists_toast:`Ese email ya existe`, auth_created_toast:`Cuenta creada`, signedout_toast:`Sesión cerrada`,
+  host_already_t:`Ya eres anfitrión`, host_already_p:`Gestiona tus anuncios y reservas desde tu panel.`, host_already_btn:`Ir al panel de anfitrión`,
+  host_admin_t:`Sesión iniciada como admin`, host_admin_p:`Usa una cuenta de anfitrión o viajero para postular.`, host_admin_btn:`Abrir administración`,
+  wiz_eyebrow:`Sé anfitrión`, wiz_title:`Publica tu experiencia en Vivência`,
+  wiz_sub:`Cinco pasos rápidos. Te verificamos en 24 horas y quedas en línea. Comisión única del 15 por ciento, nada que pagar por publicar.`,
+  wiz_step:`Paso {n} de 5`, wizlabel_1:`Tu cuenta`, wizlabel_2:`Sobre ti`, wizlabel_3:`Documentos de verificación`,
+  wizlabel_4:`Tu primera experiencia`, wizlabel_5:`Revisar y enviar`,
+  step1_sub:`Así es como los viajeros y nuestro equipo te contactan.`,
+  f_password:`Contraseña`, password_hint:`la usarás para iniciar sesión`, f_business:`Nombre comercial o de la empresa`, ph_business:`ej.: Atlantic Sailing Co.`,
+  f_nif:`Número fiscal (NIF)`, hint_optional:`opcional`, f_phone:`Teléfono`, f_base:`Dónde tienes tu base`,
+  required:`Obligatorio`, email_needed:`Se necesita un email válido`, pass_min:`Al menos 4 caracteres`,
+  step2_sub:`Los viajeros reservan personas, no solo anuncios. Diles a quién van a conocer.`,
+  f_bio:`Biografía breve`, ph_bio:`Patrón nacido en Câmara de Lobos, diez años haciendo chárteres privados...`, bio_msg:`Cuéntanos un poco sobre ti`,
+  f_langs:`Idiomas en los que recibes`, langs_hint:`selecciona todos los que correspondan`, f_years:`Años como anfitrión`, f_maincat:`Categoría principal`,
+  step3_sub:`Nuestro equipo los revisa en 24 horas. Nada se publica hasta que estés aprobado.`,
+  doc_id_t:`Documento de identidad`, doc_id_d:`Pasaporte o documento nacional de identidad`, doc_license_t:`Licencia de actividad`, doc_license_d:`Licencia de tour, patrón o actividad local`,
+  doc_ins_t:`Seguro de responsabilidad`, doc_ins_d:`Cobertura de responsabilidad civil para tu actividad`, doc_upload:`Subir documento`, doc_formats:`{desc} · PDF, JPG o PNG`,
+  step4_sub:`Puedes añadir más después. Esta se publica en cuanto tú y el anuncio estén aprobados.`,
+  f_title:`Título`, f_summary:`Resumen en una línea`, f_category:`Categoría`, f_meeting:`Punto de encuentro`, f_price:`Precio por persona (€)`,
+  f_duration:`Duración (horas)`, f_groupmax:`Tamaño máximo del grupo`, f_coverimg:`URL de la imagen de portada`,
+  msg_enterprice:`Indica un precio`, msg_enterduration:`Indica una duración`, msg_entergroup:`Indica el tamaño del grupo`,
+  step5_sub:`Revisa todo y envíalo a nuestro equipo para verificación.`,
+  rl_host:`Anfitrión`, rl_business:`Empresa`, rl_basedin:`Con base en`, rl_langs:`Idiomas`, rl_iddoc:`Documento de ID`,
+  rl_license:`Licencia de actividad`, rl_insurance:`Seguro`, rl_firstlisting:`Primer anuncio`, rl_price:`Precio`,
+  notuploaded:`Sin subir`, earn_banner:`Un grupo completo en este anuncio te genera <b>{amount}</b> tras nuestra comisión única del 15 por ciento.`,
+  agree_label:`Confirmo que mis documentos son auténticos y acepto la comisión única del 15 por ciento y los términos de anfitrión.`,
+  back_btn:`← Atrás`, continue_btn:`Continuar →`, submit_app_btn:`Enviar solicitud`,
+  upload_all_docs:`Sube los tres documentos para continuar`, uploaded_toast:`{name} subido`, accept_terms_toast:`Acepta los términos para enviar`,
+  email_taken_toast:`Ese email ya tiene cuenta, inicia sesión primero`, app_submitted_title:`Solicitud enviada`,
+  app_submitted_p:`Gracias {name}. Nuestro equipo verificará tus documentos y tu primer anuncio en <b>24 horas</b>. Quedarás en línea en cuanto te aprueben.`,
+  dash_hello:`Hola, {name}`, dash_trav_sub:`Tus viajes y reservas en un solo lugar.`, dash_find:`Buscar una experiencia`,
+  stat_totalbookings:`Total de reservas`, stat_upcoming:`Próximas`, stat_totalspent:`Total gastado`, stat_becomehost:`Sé anfitrión`,
+  start_hosting:`Empieza a recibir →`, your_bookings:`Tus reservas`, nobookings_t:`Aún sin reservas`,
+  nobookings_p:`Cuando reserves una experiencia, aparecerá aquí.`, explore_experiences:`Explorar experiencias`,
+  payout_word:`pago · {fee} de comisión`, host_dash_sub:`Panel de anfitrión · {base}`,
+  banner_verified:`Eres un <b>anfitrión verificado</b>. Los nuevos anuncios siguen pasando una revisión rápida de contenido antes de publicarse.`,
+  banner_rejected:`Tu solicitud necesita cambios. Nuestro equipo dejó una nota, vuelve a enviar tus documentos.`,
+  banner_review:`Tu cuenta está <b>en revisión</b>. Verificamos en 24 horas. Los anuncios quedan ocultos hasta tu aprobación.`,
+  tab_overview:`Resumen`, tab_listings:`Anuncios`, tab_bookings:`Reservas`, tab_account:`Cuenta`,
+  stat_gross:`Ventas brutas`, stat_commission:`Comisión (15%)`, bookings_word:`{n} reservas`, stat_payout:`Tu pago`,
+  platform_fee:`tarifa de la plataforma`, net_toyou:`neto para ti`, stat_live:`Anuncios en línea`, inreview:`{n} en revisión`,
+  recent_bookings:`Reservas recientes`, nobk_host:`Aún sin reservas. En cuanto un anuncio esté en línea, las reservas llegan aquí.`,
+  your_listings:`Tus anuncios`, new_listing:`+ Nuevo anuncio`, verify_first:`Verifica primero tu cuenta`,
+  listings_locked:`Podrás añadir nuevos anuncios cuando tu cuenta esté verificada.`, nolistings:`Aún sin anuncios.`,
+  all_bookings:`Todas las reservas`, account_verification:`Cuenta y verificación`, rl_status:`Estado`, rl_phone:`Teléfono`,
+  rl_documents:`Documentos`, docs_uploaded:`{n} subidos`, view_live:`ver en línea →`, awaiting_review:`a la espera de revisión`, needs_changes:`necesita cambios`,
+  nl_title:`Nuevo anuncio`, nl_price:`Precio p/persona (€)`, nl_dur:`Duración (h)`, nl_max:`Grupo máx.`, submit_review:`Enviar a revisión`,
+  nl_note:`Los nuevos anuncios se revisan antes de publicarse`, fill_all_toast:`Rellena todos los campos`, listing_submitted_toast:`Anuncio enviado a revisión`,
+  admin_t:`Administración`, admin_sub:`Verifica anfitriones, aprueba anuncios, sigue los números.`,
+  atab_hosts:`Solicitudes de anfitrión`, atab_listings:`Revisión de anuncios`, atab_bookings:`Reservas`, atab_users:`Usuarios`,
+  stat_revenue:`Ingresos de la plataforma`, revenue_sub:`15% de {gmv} de GMV`, stat_pendinghosts:`Anfitriones pendientes`,
+  stat_pendinglistings:`Anuncios pendientes`, stat_liveexp:`Experiencias en línea`, hosts_count:`{n} anfitriones`,
+  noapps_t:`No hay solicitudes en espera`, noapps_p:`Las nuevas solicitudes de anfitrión aparecerán aquí para revisión.`, verified_hosts:`Anfitriones verificados`,
+  nothing_review_t:`Nada que revisar`, nothing_review_p:`Los anuncios pendientes aparecen aquí.`, approve:`Aprobar`, reject:`Rechazar`,
+  bookings_gross:`{n} reservas · {gmv} bruto`, host_verified_pill:`anfitrión verificado`, host_notverified_pill:`anfitrión no verificado`,
+  host_label:`Anfitrión: {name}`, nodocuments:`Sin documentos`, verifyhost_first:`Verifica primero al anfitrión`,
+  admin_only_toast:`Acceso solo para admin`, verified_toast:`{name} verificado`, rejected_toast:`Solicitud de anfitrión rechazada`,
+  listing_live_toast:`Anuncio en línea`, listing_rejected_toast:`Anuncio rechazado`, verify_before_toast:`Verifica al anfitrión antes de publicar`,
+  nf_title:`Página no encontrada`, nf_p:`Ese enlace no lleva a ninguna parte.`, back_home:`Volver al inicio`,
+  cat_ocean:`Barco & Mar`, cat_nature:`Senderismo & Naturaleza`, cat_food:`Comida & Vino`, cat_culture:`Cultura & Ciudad`, cat_adventure:`Aventura`,
+  st_live:`en línea`, st_pending:`pendiente`, st_rejected:`rechazado`, st_verified:`verificado`, st_confirmed:`confirmada`, st_cancelled:`cancelada`,
+  role_admin:`admin`, role_host:`anfitrión`, role_traveler:`viajero`, storage_full:`Almacenamiento lleno, libera espacio`,
+},
+};
+const catLabel = c => t('cat_'+(typeof c==='string'?c:c.id));
+const statusLabel = s => t('st_'+s) || s;
+const roleLabel = r => t('role_'+r) || r;
+const guestWord = n => (n===1?t('guest_one'):t('guests_many'));
 
 /* ============================ SEED ============================ */
 const CATS = [
@@ -485,8 +941,8 @@ function seed(){
   const users=[
     {id:adminId, name:'Admin', email:'admin@vivencia.pt', pass:'admin', role:'admin', createdAt:Date.now()},
     {id:trav, name:'Mara Lopes', email:'mara@traveler.pt', pass:'demo', role:'traveler', createdAt:Date.now()},
-    {id:h1, name:'Tiago Andrade', email:'tiago@chifbay.pt', pass:'demo', role:'host', createdAt:Date.now()-9e8,
-      host:{status:'verified', business:'Chifbay Charters', nif:'PT512334221', phone:'+351 291 000 111', base:'Funchal, Madeira', about:'Skipper born in Câmara de Lobos, ten years running private charters off the south coast.', languages:'Portuguese, English, French', category:'ocean', years:'10', docs:[{name:'skipper_license.pdf',type:'application/pdf',size:284014},{name:'maritime_insurance.pdf',type:'application/pdf',size:198220},{name:'id_card.jpg',type:'image/jpeg',size:142003}], submittedAt:Date.now()-9e8}},
+    {id:h1, name:'Tiago Andrade', email:'tiago@atlanticsail.pt', pass:'demo', role:'host', createdAt:Date.now()-9e8,
+      host:{status:'verified', business:'Atlantic Sail Madeira', nif:'PT512334221', phone:'+351 291 000 111', base:'Funchal, Madeira', about:'Skipper born in Câmara de Lobos, ten years running private charters off the south coast.', languages:'Portuguese, English, French', category:'ocean', years:'10', docs:[{name:'skipper_license.pdf',type:'application/pdf',size:284014},{name:'maritime_insurance.pdf',type:'application/pdf',size:198220},{name:'id_card.jpg',type:'image/jpeg',size:142003}], submittedAt:Date.now()-9e8}},
     {id:h2, name:'Inês Carvalho', email:'ines@levada.pt', pass:'demo', role:'host', createdAt:Date.now()-7e8,
       host:{status:'verified', business:'Laurissilva Walks', nif:'PT509887112', phone:'+351 291 222 333', base:'Santana, Madeira', about:'Mountain guide specialised in the levada network and the laurel forest.', languages:'Portuguese, English, German', category:'nature', years:'7', docs:[{name:'guide_certification.pdf',type:'application/pdf',size:221140},{name:'liability_cover.pdf',type:'application/pdf',size:176330}], submittedAt:Date.now()-7e8}},
     {id:h3, name:'Rui Bettencourt', email:'rui@porto.pt', pass:'demo', role:'host', createdAt:Date.now()-5e8,
@@ -582,22 +1038,71 @@ function hydratePhotos(scope){
 }
 
 /* ============================ NAV ============================ */
+function langSwitcher(){
+  const cur=LANGS.find(l=>l.code===CURRENT_LANG)||LANGS[0];
+  const globe='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.5 3.8 5.7 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.7-3.8-9s1.3-6.5 3.8-9z"/></svg>';
+  return '<div class="lang-switch" id="langSwitch">'
+    +'<button class="lang-btn" onclick="toggleLangMenu(event)" aria-label="Language">'+globe+'<span>'+cur.code.toUpperCase()+'</span><span class="chev">▾</span></button>'
+    +'<div class="lang-menu" id="langMenu">'
+    + LANGS.map(l=>'<button class="lang-opt'+(l.code===CURRENT_LANG?' on':'')+'" onclick="setLang(\''+l.code+'\')"><span class="flag">'+l.flag+'</span>'+l.name+(l.code===CURRENT_LANG?'<span class="tick">✓</span>':'')+'</button>').join('')
+    +'</div></div>';
+}
+function toggleLangMenu(e){
+  e.stopPropagation();
+  const sw=document.getElementById('langSwitch'), m=document.getElementById('langMenu');
+  if(!m) return; const open=m.classList.toggle('on'); if(sw) sw.classList.toggle('open',open);
+}
+document.addEventListener('click',()=>{ const m=document.getElementById('langMenu'),sw=document.getElementById('langSwitch'); if(m) m.classList.remove('on'); if(sw) sw.classList.remove('open'); });
 function renderNav(){
   const u=me();
   const hash=location.hash||'#/';
-  const links=[['#/','Home'],['#/explore','Explore'],['#/host','Become a host']];
+  const links=[['#/',t('nav_home')],['#/explore',t('nav_explore')],['#/host',t('nav_host')]];
   document.getElementById('navLinks').innerHTML=links.map(l=>
     '<a href="'+l[0]+'" class="'+(hash===l[0]?'on':'')+'">'+l[1]+'</a>').join('');
+  const nt=document.getElementById('navToggle'); if(nt) nt.textContent=t('nav_explore');
   const right=document.getElementById('navRight');
   if(u){
-    const dash = u.role==='admin' ? '<a href="#/admin" class="btn btn-ghost btn-sm">Admin desk</a>' :
-                 '<a href="#/dashboard" class="btn btn-ghost btn-sm">Dashboard</a>';
-    right.innerHTML = dash + '<button class="btn btn-line btn-sm" onclick="logout()">'+initials(u.name)+' · Sign out</button>';
+    const dash = u.role==='admin' ? '<a href="#/admin" class="btn btn-ghost btn-sm">'+t('nav_admin')+'</a>' :
+                 '<a href="#/dashboard" class="btn btn-ghost btn-sm">'+t('nav_dashboard')+'</a>';
+    right.innerHTML = langSwitcher() + dash + '<button class="btn btn-line btn-sm" onclick="logout()">'+initials(u.name)+' · '+t('nav_signout')+'</button>';
   }else{
-    right.innerHTML='<a href="#/auth" class="btn btn-ghost btn-sm">Sign in</a><a href="#/host" class="btn btn-dark btn-sm">Host with us</a>';
+    right.innerHTML=langSwitcher()+'<a href="#/auth" class="btn btn-ghost btn-sm">'+t('nav_signin')+'</a><a href="#/host" class="btn btn-dark btn-sm">'+t('nav_hostcta')+'</a>';
   }
 }
-function logout(){ DB.setSession(null); toast('Signed out'); location.hash='#/'; }
+function renderFooter(){
+  const el=document.getElementById('footWrap'); if(!el) return;
+  el.innerHTML=`
+      <div class="foot-grid">
+        <div>
+          <div class="brand" style="font-size:20px"><span class="dot"></span>Vivência</div>
+          <p class="muted-line" style="margin-top:14px;max-width:34ch">${t('foot_about')}</p>
+        </div>
+        <div>
+          <h4>${t('foot_travel')}</h4>
+          <a href="#/explore">${t('foot_explore')}</a>
+          <a href="#/explore">Madeira</a>
+          <a href="#/explore">Lisboa</a>
+          <a href="#/explore">Porto</a>
+        </div>
+        <div>
+          <h4>${t('foot_hosting')}</h4>
+          <a href="#/host">${t('foot_becomehost')}</a>
+          <a href="#/dashboard">${t('foot_hostdash')}</a>
+          <a href="#/host">${t('foot_payouts')}</a>
+        </div>
+        <div>
+          <h4>${t('foot_company')}</h4>
+          <a href="#/">${t('foot_aboutlink')}</a>
+          <a href="#/">${t('foot_trust')}</a>
+          <a href="#/auth">${t('nav_signin')}</a>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <span>${t('foot_copy')}</span>
+        <span>${t('foot_made')}</span>
+      </div>`;
+}
+function logout(){ DB.setSession(null); toast(t('signedout_toast')); location.hash='#/'; }
 
 /* ============================ ROUTER ============================ */
 function router(){
@@ -619,6 +1124,7 @@ function router(){
   else html=view404();
   app.innerHTML=html;
   renderNav();
+  renderFooter();
   hydratePhotos(app);
   if(typeof afterRender==='function' && afterRender._fn){ afterRender._fn(); afterRender._fn=null; }
   observeReveal();
@@ -638,12 +1144,12 @@ function expCard(e){
   const c=catOf(e.category);
   return '<a class="card reveal" href="#/experience/'+e.id+'">'
     +'<div class="media">'+photo(e.img,c.g)
-    +'<span class="tag">'+c.ic+' '+c.label+'</span><span class="like">♡</span></div>'
+    +'<span class="tag">'+c.ic+' '+catLabel(c)+'</span><span class="like">♡</span></div>'
     +'<div class="body"><div class="loc">◷ '+e.location+', '+e.region+'</div>'
     +'<div class="ttl">'+e.title+'</div>'
-    +'<div class="meta"><span class="rate"><span class="s">★</span>'+e.rating+'</span><span>'+e.reviews+' reviews</span><span>·</span><span>'+e.durationHrs+'h</span></div>'
-    +'<div class="foot"><span class="muted-line" style="font-size:12.5px">Hosted by '+e.hostName.split(' ')[0]+'</span>'
-    +'<span class="price">'+money(e.price)+' <small>per person</small></span></div></div></a>';
+    +'<div class="meta"><span class="rate"><span class="s">★</span>'+e.rating+'</span><span>'+e.reviews+' '+t('reviews')+'</span><span>·</span><span>'+e.durationHrs+'h</span></div>'
+    +'<div class="foot"><span class="muted-line" style="font-size:12.5px">'+t('card_hostedby',{name:e.hostName.split(' ')[0]})+'</span>'
+    +'<span class="price">'+money(e.price)+' <small>'+t('per_person')+'</small></span></div></div></a>';
 }
 
 /* ============================ HOME ============================ */
@@ -653,24 +1159,24 @@ function viewHome(){
   return `
   <section class="hero"><div class="wrap"><div class="hero-grid">
     <div>
-      <span class="eyebrow">Madeira & Portugal</span>
-      <h1 class="h-xl">Do the thing you<br>flew here for.</h1>
-      <p class="lede">Boat trips, mountain trails, cellar tastings and city walks, run by verified local hosts who know exactly where to take you.</p>
+      <span class="eyebrow">${t('hero_eyebrow')}</span>
+      <h1 class="h-xl">${t('hero_title')}</h1>
+      <p class="lede">${t('hero_lede')}</p>
       <div class="composer" id="homeComposer">
-        <div class="field"><label>Where</label>
-          <select id="hcRegion"><option value="">Anywhere in Portugal</option>${REGIONS.map(r=>'<option>'+r+'</option>').join('')}</select></div>
+        <div class="field"><label>${t('composer_where')}</label>
+          <select id="hcRegion"><option value="">${t('composer_where_any')}</option>${REGIONS.map(r=>'<option>'+r+'</option>').join('')}</select></div>
         <div class="sep"></div>
-        <div class="field"><label>Experience</label>
-          <select id="hcCat"><option value="">Any kind</option>${CATS.map(c=>'<option value="'+c.id+'">'+c.label+'</option>').join('')}</select></div>
+        <div class="field"><label>${t('composer_exp')}</label>
+          <select id="hcCat"><option value="">${t('composer_exp_any')}</option>${CATS.map(c=>'<option value="'+c.id+'">'+catLabel(c)+'</option>').join('')}</select></div>
         <div class="sep"></div>
-        <div class="field"><label>Search</label>
-          <input id="hcQ" placeholder="sunset, levada, wine..." /></div>
-        <button class="go" id="hcGo" aria-label="Search">→</button>
+        <div class="field"><label>${t('composer_search')}</label>
+          <input id="hcQ" placeholder="${t('composer_search_ph')}" /></div>
+        <button class="go" id="hcGo" aria-label="${t('composer_search')}">→</button>
       </div>
       <div class="trust">
-        <div class="t">✓ <b>Verified hosts</b> only</div>
-        <div class="t">★ <b>4.8</b> average rating</div>
-        <div class="t">⚡ Free cancellation</div>
+        <div class="t">${t('trust_verified')}</div>
+        <div class="t">${t('trust_rating')}</div>
+        <div class="t">${t('trust_cancel')}</div>
       </div>
     </div>
     <div class="hero-art">
@@ -681,40 +1187,40 @@ function viewHome(){
 
   <section class="sec-tight"><div class="wrap">
     <div class="chips" id="homeCats">
-      ${CATS.map(c=>'<a class="chip" href="#/explore?cat='+c.id+'"><span class="ic '+c.g+'"></span>'+c.label+'</a>').join('')}
+      ${CATS.map(c=>'<a class="chip" href="#/explore?cat='+c.id+'"><span class="ic '+c.g+'"></span>'+catLabel(c)+'</a>').join('')}
     </div>
   </div></section>
 
   <section class="sec" style="padding-top:20px"><div class="wrap">
     <div class="sec-head">
-      <div><span class="eyebrow">Loved right now</span><h2 class="h-lg" style="margin-top:10px">Featured experiences</h2></div>
-      <a class="link-arrow" href="#/explore">See all experiences →</a>
+      <div><span class="eyebrow">${t('feat_eyebrow')}</span><h2 class="h-lg" style="margin-top:10px">${t('feat_title')}</h2></div>
+      <a class="link-arrow" href="#/explore">${t('feat_seeall')}</a>
     </div>
     <div class="grid">${featured.map(expCard).join('')}</div>
   </div></section>
 
   <section class="sec-tight"><div class="wrap">
     <div class="center-narrow" style="margin-bottom:40px">
-      <span class="eyebrow">Simple by design</span>
-      <h2 class="h-lg" style="margin-top:10px">How Vivência works</h2>
+      <span class="eyebrow">${t('how_eyebrow')}</span>
+      <h2 class="h-lg" style="margin-top:10px">${t('how_title')}</h2>
     </div>
     <div class="steps">
-      <div class="step reveal"><div class="n">1</div><h3>Find your experience</h3><p>Browse by region or by the kind of day you want. Every listing shows the real host, the group size and an honest price.</p></div>
-      <div class="step reveal"><div class="n">2</div><h3>Book in seconds</h3><p>Reserve as a guest or with an account. Pick your date, confirm your group, done. Free cancellation on most experiences.</p></div>
-      <div class="step reveal"><div class="n">3</div><h3>Meet your host</h3><p>You get a verified local who actually lives the place. They handle the logistics so you just show up and enjoy it.</p></div>
+      <div class="step reveal"><div class="n">1</div><h3>${t('how1_t')}</h3><p>${t('how1_p')}</p></div>
+      <div class="step reveal"><div class="n">2</div><h3>${t('how2_t')}</h3><p>${t('how2_p')}</p></div>
+      <div class="step reveal"><div class="n">3</div><h3>${t('how3_t')}</h3><p>${t('how3_p')}</p></div>
     </div>
   </div></section>
 
   <section class="sec"><div class="wrap"><div class="band reveal">
-    <span class="eyebrow" style="color:rgba(255,255,255,.8)">For local hosts</span>
-    <h2 class="h-lg" style="margin-top:12px">Turn what you know into income.</h2>
-    <p>List your experience in minutes. We verify you within 24 hours, then send you travellers. One flat 15 percent commission, no listing fees, no surprises.</p>
+    <span class="eyebrow" style="color:rgba(255,255,255,.8)">${t('band_eyebrow')}</span>
+    <h2 class="h-lg" style="margin-top:12px">${t('band_title')}</h2>
+    <p>${t('band_p')}</p>
     <div class="row">
-      <div class="stat"><b>15%</b><span>flat commission</span></div>
-      <div class="stat"><b>24h</b><span>verification</span></div>
-      <div class="stat"><b>€0</b><span>to list</span></div>
+      <div class="stat"><b>15%</b><span>${t('band_stat1')}</span></div>
+      <div class="stat"><b>24h</b><span>${t('band_stat2')}</span></div>
+      <div class="stat"><b>€0</b><span>${t('band_stat3')}</span></div>
     </div>
-    <a href="#/host" class="btn btn-lg" style="background:#fff;color:var(--ocean-deep)">Start hosting →</a>
+    <a href="#/host" class="btn btn-lg" style="background:#fff;color:var(--ocean-deep)">${t('band_cta')}</a>
   </div></div></section>`;
 
 }
@@ -752,23 +1258,23 @@ function viewExplore(){
 
   return `
   <section class="explore-head"><div class="wrap">
-    <span class="eyebrow">Explore</span>
-    <h1 class="h-md" style="margin-top:8px">${region? region : 'Madeira and Portugal'}, your way</h1>
+    <span class="eyebrow">${t('explore_eyebrow')}</span>
+    <h1 class="h-md" style="margin-top:8px">${t('explore_title',{place:region? region : t('explore_defaultplace')})}</h1>
     <div class="filters">
-      <div class="search-line">🔍<input id="fQ" placeholder="Search experiences, places, hosts" value="${term?escapeHtml(q.get('q')||''):''}"></div>
-      <div class="fbox"><label>Region</label><select id="fRegion"><option value="">All</option>${REGIONS.map(r=>'<option '+(r===region?'selected':'')+'>'+r+'</option>').join('')}</select></div>
-      <div class="fbox"><label>Type</label><select id="fCat"><option value="">All</option>${CATS.map(c=>'<option value="'+c.id+'" '+(c.id===cat?'selected':'')+'>'+c.label+'</option>').join('')}</select></div>
-      <div class="fbox"><label>Sort</label><select id="fSort">
-        <option value="rating" ${sort==='rating'?'selected':''}>Top rated</option>
-        <option value="price-low" ${sort==='price-low'?'selected':''}>Price low to high</option>
-        <option value="price-high" ${sort==='price-high'?'selected':''}>Price high to low</option>
+      <div class="search-line">🔍<input id="fQ" placeholder="${t('explore_search_ph')}" value="${term?escapeHtml(q.get('q')||''):''}"></div>
+      <div class="fbox"><label>${t('f_region')}</label><select id="fRegion"><option value="">${t('f_all')}</option>${REGIONS.map(r=>'<option '+(r===region?'selected':'')+'>'+r+'</option>').join('')}</select></div>
+      <div class="fbox"><label>${t('f_type')}</label><select id="fCat"><option value="">${t('f_all')}</option>${CATS.map(c=>'<option value="'+c.id+'" '+(c.id===cat?'selected':'')+'>'+catLabel(c)+'</option>').join('')}</select></div>
+      <div class="fbox"><label>${t('f_sort')}</label><select id="fSort">
+        <option value="rating" ${sort==='rating'?'selected':''}>${t('sort_rating')}</option>
+        <option value="price-low" ${sort==='price-low'?'selected':''}>${t('sort_pricelow')}</option>
+        <option value="price-high" ${sort==='price-high'?'selected':''}>${t('sort_pricehigh')}</option>
       </select></div>
     </div>
   </div></section>
   <section style="padding-bottom:90px"><div class="wrap">
-    <div class="result-meta"><span><b style="color:var(--ink)">${list.length}</b> ${list.length===1?'experience':'experiences'} found</span></div>
+    <div class="result-meta"><span>${(list.length===1?t('found_one',{n:'<b style="color:var(--ink)">1</b>'}):t('found_many',{n:'<b style="color:var(--ink)">'+list.length+'</b>'}))}</span></div>
     ${list.length? '<div class="grid">'+list.map(expCard).join('')+'</div>'
-      : '<div class="empty"><div class="big">🧭</div><h3 class="h-md">No experiences match yet</h3><p style="margin-top:8px">Try widening your region or clearing the search.</p></div>'}
+      : '<div class="empty"><div class="big">🧭</div><h3 class="h-md">'+t('empty_title')+'</h3><p style="margin-top:8px">'+t('empty_p')+'</p></div>'}
   </div></section>`;
 }
 function bindExplore(){
@@ -798,39 +1304,39 @@ function viewExperience(e){
   ];
   return `
   <section><div class="wrap">
-    <div style="margin-top:24px"><a class="link-arrow" href="#/explore">← Back to explore</a></div>
+    <div style="margin-top:24px"><a class="link-arrow" href="#/explore">${t('exp_back')}</a></div>
     <div class="exp-hero">
       ${gal.map((g,i)=>'<div class="ph '+c.g+'" data-photo="'+g+'"></div>').join('')}
     </div>
     <div class="exp-detail">
       <div>
-        <span class="eyebrow">${c.ic} ${c.label}</span>
+        <span class="eyebrow">${c.ic} ${catLabel(c)}</span>
         <h1 class="exp-title serif" style="margin-top:10px">${e.title}</h1>
         <div class="exp-sub">
-          <span class="rate"><span class="s">★</span> ${e.rating} <span style="color:var(--muted);font-weight:400">(${e.reviews} reviews)</span></span>
+          <span class="rate"><span class="s">★</span> ${e.rating} <span style="color:var(--muted);font-weight:400">${t('exp_reviews_count',{n:e.reviews})}</span></span>
           <span>◷ ${e.location}, ${e.region}</span>
         </div>
         <div class="facts">
-          <div class="fact"><div class="k">Duration</div><div class="v">${e.durationHrs} hours</div></div>
-          <div class="fact"><div class="k">Group size</div><div class="v">Up to ${e.groupMax}</div></div>
-          <div class="fact"><div class="k">Languages</div><div class="v">${host&&host.host?host.host.languages.split(',')[0]:'English'} +</div></div>
-          <div class="fact"><div class="k">Cancellation</div><div class="v">Free 24h</div></div>
+          <div class="fact"><div class="k">${t('fact_duration')}</div><div class="v">${t('fact_hours',{n:e.durationHrs})}</div></div>
+          <div class="fact"><div class="k">${t('fact_group')}</div><div class="v">${t('fact_upto',{n:e.groupMax})}</div></div>
+          <div class="fact"><div class="k">${t('fact_langs')}</div><div class="v">${host&&host.host?host.host.languages.split(',')[0]:'English'} +</div></div>
+          <div class="fact"><div class="k">${t('fact_cancel')}</div><div class="v">${t('fact_free24')}</div></div>
         </div>
         <div class="divider"></div>
-        <h2 class="h-md">About this experience</h2>
+        <h2 class="h-md">${t('about_title')}</h2>
         <div class="prose" style="margin-top:14px">${e.desc.map(p=>'<p>'+p+'</p>').join('')}</div>
         <div class="divider"></div>
-        <h2 class="h-md">What is included</h2>
+        <h2 class="h-md">${t('included_title')}</h2>
         <ul class="inc">${e.inc.map(i=>'<li><span class="ck">✓</span>'+i+'</li>').join('')}</ul>
         <div class="divider"></div>
-        <h2 class="h-md">Your host</h2>
+        <h2 class="h-md">${t('host_title')}</h2>
         <div class="host-card">
           <div class="av" style="background:linear-gradient(135deg,${avFor(e.hostName)},${avFor(e.hostName)}cc)">${initials(e.hostName)}</div>
-          <div><div class="nm">${e.hostName} <span class="verified">✓ Verified</span></div>
-          <div class="muted-line" style="font-size:13.5px;margin-top:4px">${host&&host.host?host.host.about:'Local host based in '+e.region+'.'}</div></div>
+          <div><div class="nm">${e.hostName} <span class="verified">${t('verified_badge')}</span></div>
+          <div class="muted-line" style="font-size:13.5px;margin-top:4px">${host&&host.host?host.host.about:t('localhost_fallback',{region:e.region})}</div></div>
         </div>
         <div class="divider"></div>
-        <h2 class="h-md">Reviews</h2>
+        <h2 class="h-md">${t('reviews_title')}</h2>
         <div style="margin-top:8px">${seedReviews.map(rv=>
           '<div class="review"><div class="av" style="background:'+avFor(rv.n)+'">'+initials(rv.n)+'</div>'
           +'<div><div style="font-weight:600;font-size:14.5px">'+rv.n+'</div><div class="s">'+stars(rv.r)+'</div>'
@@ -838,14 +1344,14 @@ function viewExperience(e){
       </div>
       <aside>
         <div class="booker">
-          <div class="pr"><b class="mono">${money(e.price)}</b><span>per person</span></div>
-          <div class="bk-field"><label>Date</label><input type="date" id="bkDate" min="${new Date().toISOString().slice(0,10)}"></div>
-          <div class="bk-field"><label>Guests</label>
+          <div class="pr"><b class="mono">${money(e.price)}</b><span>${t('per_person')}</span></div>
+          <div class="bk-field"><label>${t('bk_date')}</label><input type="date" id="bkDate" min="${new Date().toISOString().slice(0,10)}"></div>
+          <div class="bk-field"><label>${t('bk_guests')}</label>
             <div class="stepper"><button type="button" id="gMinus">−</button><b id="gCount">2</b><button type="button" id="gPlus">+</button></div>
           </div>
           <div class="bk-sum" id="bkSum"></div>
-          <button class="btn btn-primary btn-lg btn-block" id="bookBtn">Book now</button>
-          <div class="bk-note">You will not be charged in this demo</div>
+          <button class="btn btn-primary btn-lg btn-block" id="bookBtn">${t('book_now')}</button>
+          <div class="bk-note">${t('bk_note')}</div>
         </div>
       </aside>
     </div>
@@ -863,16 +1369,16 @@ function bindExperience(e){
   const render=()=>{
     gc.textContent=guests;
     const sub=e.price*guests; const com=sub*COMMISSION;
-    sum.innerHTML='<div class="r"><span>'+money(e.price)+' × '+guests+' guests</span><span class="mono">'+money(sub)+'</span></div>'
-      +'<div class="r"><span>Free cancellation</span><span class="mono">'+money(0)+'</span></div>'
-      +'<div class="r tot"><span>Total</span><span class="mono">'+money(sub)+'</span></div>';
+    sum.innerHTML='<div class="r"><span>'+money(e.price)+' × '+guests+' '+guestWord(guests)+'</span><span class="mono">'+money(sub)+'</span></div>'
+      +'<div class="r"><span>'+t('bk_freecancel')+'</span><span class="mono">'+money(0)+'</span></div>'
+      +'<div class="r tot"><span>'+t('bk_total')+'</span><span class="mono">'+money(sub)+'</span></div>';
   };
-  document.getElementById('gPlus').onclick=()=>{ if(guests<max){guests++;render();} else toast('Group max is '+max,'err'); };
+  document.getElementById('gPlus').onclick=()=>{ if(guests<max){guests++;render();} else toast(t('group_max_toast',{n:max}),'err'); };
   document.getElementById('gMinus').onclick=()=>{ if(guests>1){guests--;render();} };
   render();
   document.getElementById('bookBtn').onclick=()=>{
     const date=document.getElementById('bkDate').value;
-    if(!date){ toast('Pick a date first','err'); document.getElementById('bkDate').focus(); return; }
+    if(!date){ toast(t('pickdate_toast'),'err'); document.getElementById('bkDate').focus(); return; }
     openBookingFlow(e,date,guests);
   };
 }
@@ -880,21 +1386,22 @@ function openBookingFlow(e,date,guests){
   const u=me();
   const sub=e.price*guests, com=+(sub*COMMISSION).toFixed(2), payout=+(sub-com).toFixed(2);
   const guestForm = (u && u.role!=='admin') ? '' :
-    '<div class="field"><label>Full name</label><input id="bcName" placeholder="Your name" value="'+(u?escapeHtml(u.name):'')+'"></div>'
-    +'<div class="field"><label>Email</label><input id="bcEmail" type="email" placeholder="you@email.com" value="'+(u?escapeHtml(u.email):'')+'"></div>';
+    '<div class="field"><label>'+t('modal_fullname')+'</label><input id="bcName" placeholder="'+t('modal_yourname_ph')+'" value="'+(u?escapeHtml(u.name):'')+'"></div>'
+    +'<div class="field"><label>'+t('modal_email')+'</label><input id="bcEmail" type="email" placeholder="you@email.com" value="'+(u?escapeHtml(u.email):'')+'"></div>';
+  const signinLink='<a href="#/auth" onclick="closeModal()" style="color:var(--ocean);font-weight:550">'+t('guest_signin')+'</a>';
   openModal(`
-    <div class="modal-head"><h3>Confirm your booking</h3><span class="x" onclick="closeModal()">×</span></div>
+    <div class="modal-head"><h3>${t('confirm_title')}</h3><span class="x" onclick="closeModal()">×</span></div>
     <div class="modal-body">
       <div class="lcard" style="margin-bottom:18px;cursor:default">
         <div class="thumb ${catOf(e.category).g}" data-photo="${e.img}"></div>
-        <div class="main"><div class="t">${e.title}</div><div class="s">${fmtDate(date)} · ${guests} ${guests===1?'guest':'guests'}</div></div>
+        <div class="main"><div class="t">${e.title}</div><div class="s">${fmtDate(date)} · ${guests} ${guestWord(guests)}</div></div>
       </div>
-      ${ (!u) ? '<p class="muted-line" style="margin-bottom:14px">Booking as a guest. <a href="#/auth" onclick="closeModal()" style="color:var(--ocean);font-weight:550">Sign in</a> to track it in your dashboard.</p>'+guestForm : guestForm }
+      ${ (!u) ? '<p class="muted-line" style="margin-bottom:14px">'+t('booking_as_guest',{signin:signinLink})+'</p>'+guestForm : guestForm }
       <div class="bk-sum">
         <div class="r"><span>${money(e.price)} × ${guests}</span><span class="mono" style="color:var(--ink)">${money(sub)}</span></div>
-        <div class="r tot"><span>Total to pay</span><span class="mono">${money(sub)}</span></div>
+        <div class="r tot"><span>${t('guest_total')}</span><span class="mono">${money(sub)}</span></div>
       </div>
-      <button class="btn btn-primary btn-lg btn-block" id="confirmBtn">Confirm booking · ${money(sub)}</button>
+      <button class="btn btn-primary btn-lg btn-block" id="confirmBtn">${t('confirm_btn',{amount:money(sub)})}</button>
     </div>`);
   document.querySelectorAll('#modal .thumb[data-photo]').forEach(el=>{
     const src=el.getAttribute('data-photo'); const im=new Image(); im.onload=()=>el.style.backgroundImage='url('+src+')'; im.src=src;
@@ -905,7 +1412,7 @@ function openBookingFlow(e,date,guests){
     else{
       name=document.getElementById('bcName').value.trim();
       email=document.getElementById('bcEmail').value.trim();
-      if(!name||!/.+@.+\..+/.test(email)){ toast('Add a valid name and email','err'); return; }
+      if(!name||!/.+@.+\..+/.test(email)){ toast(t('guest_valid_toast'),'err'); return; }
     }
     const b={id:uid(), codeStr:code(), expId:e.id, expTitle:e.title, hostId:e.hostId, userId:(u&&u.role!=='admin')?u.id:null,
       customer:{name,email}, date, guests, subtotal:sub, commission:com, payout, status:'confirmed', createdAt:Date.now()};
@@ -915,20 +1422,20 @@ function openBookingFlow(e,date,guests){
 }
 function showTicket(b,e){
   openModal(`
-    <div class="modal-head"><h3>You are booked</h3><span class="x" onclick="closeModal()">×</span></div>
+    <div class="modal-head"><h3>${t('booked_title')}</h3><span class="x" onclick="closeModal()">×</span></div>
     <div class="modal-body" style="text-align:center">
       <div class="confirm-mark">✓</div>
       <p class="muted-line">${e.title}</p>
       <div class="ticket" style="text-align:left">
-        <div class="r"><span class="k">Confirmation</span><span class="v code" style="font-size:14px">${b.codeStr}</span></div>
-        <div class="r"><span class="k">Date</span><span class="v">${fmtDate(b.date)}</span></div>
-        <div class="r"><span class="k">Guests</span><span class="v">${b.guests}</span></div>
-        <div class="r"><span class="k">Total paid</span><span class="v mono">${money(b.subtotal)}</span></div>
-        <div class="r"><span class="k">Host</span><span class="v">${e.hostName}</span></div>
+        <div class="r"><span class="k">${t('ticket_confirmation')}</span><span class="v code" style="font-size:14px">${b.codeStr}</span></div>
+        <div class="r"><span class="k">${t('ticket_date')}</span><span class="v">${fmtDate(b.date)}</span></div>
+        <div class="r"><span class="k">${t('ticket_guests')}</span><span class="v">${b.guests}</span></div>
+        <div class="r"><span class="k">${t('ticket_totalpaid')}</span><span class="v mono">${money(b.subtotal)}</span></div>
+        <div class="r"><span class="k">${t('ticket_host')}</span><span class="v">${e.hostName}</span></div>
       </div>
-      <button class="btn btn-dark btn-block" onclick="closeModal();${me()?"location.hash='#/dashboard'":""}">${me()?'View in dashboard':'Done'}</button>
+      <button class="btn btn-dark btn-block" onclick="closeModal();${me()?"location.hash='#/dashboard'":""}">${me()?t('view_dashboard'):t('done')}</button>
     </div>`);
-  toast('Booking confirmed · '+b.codeStr);
+  toast(t('booking_confirmed_toast',{code:b.codeStr}));
 }
 
 /* ============================ AUTH ============================ */
@@ -937,25 +1444,25 @@ function viewAuth(){
   return `
   <section class="auth-wrap"><div class="wrap">
     <div class="center-narrow" style="margin-bottom:26px">
-      <h1 class="h-md">${authMode==='login'?'Welcome back':'Create your account'}</h1>
-      <p class="muted-line" style="margin-top:8px">Book faster, track your trips, or manage your hosting.</p>
+      <h1 class="h-md">${authMode==='login'?t('auth_welcome'):t('auth_create')}</h1>
+      <p class="muted-line" style="margin-top:8px">${t('auth_sub')}</p>
     </div>
     <div class="auth-card">
       <div class="auth-tabs">
-        <button class="${authMode==='login'?'on':''}" onclick="setAuth('login')">Sign in</button>
-        <button class="${authMode==='register'?'on':''}" onclick="setAuth('register')">Sign up</button>
+        <button class="${authMode==='login'?'on':''}" onclick="setAuth('login')">${t('auth_signin')}</button>
+        <button class="${authMode==='register'?'on':''}" onclick="setAuth('register')">${t('auth_signup')}</button>
       </div>
       <div id="authForm">
-        ${authMode==='register'?'<div class="field"><label>Full name</label><input id="auName" placeholder="Mara Lopes"></div>':''}
-        <div class="field"><label>Email</label><input id="auEmail" type="email" placeholder="you@email.com"></div>
-        <div class="field"><label>Password</label><input id="auPass" type="password" placeholder="••••••••"></div>
-        <button class="btn btn-primary btn-lg btn-block" id="auGo">${authMode==='login'?'Sign in':'Create account'}</button>
+        ${authMode==='register'?'<div class="field"><label>'+t('auth_fullname')+'</label><input id="auName" placeholder="'+t('auth_name_ph')+'"></div>':''}
+        <div class="field"><label>${t('auth_email')}</label><input id="auEmail" type="email" placeholder="you@email.com"></div>
+        <div class="field"><label>${t('auth_password')}</label><input id="auPass" type="password" placeholder="••••••••"></div>
+        <button class="btn btn-primary btn-lg btn-block" id="auGo">${authMode==='login'?t('auth_signin_btn'):t('auth_create_btn')}</button>
       </div>
       <div class="demo-hint">
-        <b>Demo logins</b><br>
-        Traveler · mara@traveler.pt / demo<br>
-        Host · tiago@chifbay.pt / demo<br>
-        Admin · admin@vivencia.pt / admin
+        <b>${t('demo_logins')}</b><br>
+        ${t('demo_traveler')} · mara@traveler.pt / demo<br>
+        ${t('demo_host')} · tiago@atlanticsail.pt / demo<br>
+        ${t('demo_admin')} · admin@vivencia.pt / admin
       </div>
     </div>
   </div></section>`;
@@ -966,20 +1473,20 @@ function bindAuth(){
   go.onclick=()=>{
     const email=document.getElementById('auEmail').value.trim().toLowerCase();
     const pass=document.getElementById('auPass').value;
-    if(!email||!pass){ toast('Fill in email and password','err'); return; }
+    if(!email||!pass){ toast(t('auth_fill_toast'),'err'); return; }
     const users=DB.users();
     if(authMode==='login'){
       const u=users.find(x=>x.email.toLowerCase()===email);
-      if(!u||u.pass!==pass){ toast('Wrong email or password','err'); return; }
-      DB.setSession(u.id); toast('Signed in as '+u.name.split(' ')[0]);
+      if(!u||u.pass!==pass){ toast(t('auth_wrong_toast'),'err'); return; }
+      DB.setSession(u.id); toast(t('auth_signedin_toast',{name:u.name.split(' ')[0]}));
       location.hash = u.role==='admin'?'#/admin':'#/dashboard';
     }else{
       const name=document.getElementById('auName').value.trim();
-      if(!name){ toast('Add your name','err'); return; }
-      if(users.some(x=>x.email.toLowerCase()===email)){ toast('That email already exists','err'); return; }
+      if(!name){ toast(t('auth_addname_toast'),'err'); return; }
+      if(users.some(x=>x.email.toLowerCase()===email)){ toast(t('auth_emailexists_toast'),'err'); return; }
       const u={id:uid(),name,email,pass,role:'traveler',createdAt:Date.now()};
       users.push(u); DB.saveUsers(users); DB.setSession(u.id);
-      toast('Account created'); location.hash='#/dashboard';
+      toast(t('auth_created_toast')); location.hash='#/dashboard';
     }
   };
   document.getElementById('auPass').addEventListener('keydown',e=>{ if(e.key==='Enter') go.click(); });
@@ -997,105 +1504,107 @@ function viewHost(){
   if(u && u.role==='host'){
     return `<section class="dash"><div class="wrap"><div class="center-narrow" style="padding:60px 0">
       <div class="confirm-mark">✓</div>
-      <h1 class="h-md">You are already a host</h1>
-      <p class="muted-line" style="margin-top:10px">Manage your listings and bookings from your dashboard.</p>
-      <a href="#/dashboard" class="btn btn-primary btn-lg" style="margin-top:20px">Go to host dashboard</a>
+      <h1 class="h-md">${t('host_already_t')}</h1>
+      <p class="muted-line" style="margin-top:10px">${t('host_already_p')}</p>
+      <a href="#/dashboard" class="btn btn-primary btn-lg" style="margin-top:20px">${t('host_already_btn')}</a>
     </div></div></section>`;
   }
   if(u && u.role==='admin'){
     return `<section class="dash"><div class="wrap"><div class="center-narrow" style="padding:60px 0">
-      <h1 class="h-md">Signed in as admin</h1><p class="muted-line" style="margin-top:10px">Use a host or traveler account to apply.</p>
-      <a href="#/admin" class="btn btn-primary btn-lg" style="margin-top:20px">Open admin desk</a></div></div></section>`;
+      <h1 class="h-md">${t('host_admin_t')}</h1><p class="muted-line" style="margin-top:10px">${t('host_admin_p')}</p>
+      <a href="#/admin" class="btn btn-primary btn-lg" style="margin-top:20px">${t('host_admin_btn')}</a></div></div></section>`;
   }
   if(u){ wizData.name=u.name; wizData.email=u.email; }
   return `<section class="wiz"><div class="wrap" style="max-width:760px">
     <div class="center-narrow" style="margin-bottom:30px;text-align:left">
-      <span class="eyebrow">Become a host</span>
-      <h1 class="h-md" style="margin-top:10px">List your experience on Vivência</h1>
-      <p class="muted-line" style="margin-top:8px">Five quick steps. We verify you within 24 hours, then you go live. Flat 15 percent commission, nothing to list.</p>
+      <span class="eyebrow">${t('wiz_eyebrow')}</span>
+      <h1 class="h-md" style="margin-top:10px">${t('wiz_title')}</h1>
+      <p class="muted-line" style="margin-top:8px">${t('wiz_sub')}</p>
     </div>
     <div class="wiz-prog">${[1,2,3,4,5].map(i=>'<div class="seg '+(i<=wizStep?'on':'')+'"></div>').join('')}</div>
-    <div class="wiz-step-label">Step <b>${wizStep}</b> of 5 · <b>${WIZ_LABELS[wizStep-1]}</b></div>
+    <div class="wiz-step-label">${t('wiz_step',{n:wizStep})} · <b>${t('wizlabel_'+wizStep)}</b></div>
     <div class="wcard" id="wizCard">${wizStepHtml()}</div>
   </div></section>`;
 }
 function wizStepHtml(){
   const d=wizData; const u=me();
   if(wizStep===1){
-    return `<h2>Your account</h2><p class="sub">This is how travellers and our team reach you.</p>
+    return `<h2>${t('wizlabel_1')}</h2><p class="sub">${t('step1_sub')}</p>
       <div class="form-row">
-        <div class="field" data-k="name"><label>Full name</label><input id="w_name" value="${escapeHtml(d.name)}" placeholder="Tiago Andrade"><div class="msg">Required</div></div>
-        <div class="field" data-k="email"><label>Email</label><input id="w_email" type="email" value="${escapeHtml(d.email)}" placeholder="you@email.com" ${u?'disabled':''}><div class="msg">Valid email needed</div></div>
+        <div class="field" data-k="name"><label>${t('auth_fullname')}</label><input id="w_name" value="${escapeHtml(d.name)}" placeholder="${t('auth_name_ph')}"><div class="msg">${t('required')}</div></div>
+        <div class="field" data-k="email"><label>${t('auth_email')}</label><input id="w_email" type="email" value="${escapeHtml(d.email)}" placeholder="you@email.com" ${u?'disabled':''}><div class="msg">${t('email_needed')}</div></div>
       </div>
-      ${u?'':'<div class="field" data-k="pass"><label>Password <span class="hint">you will use this to sign in</span></label><input id="w_pass" type="password" value="'+escapeHtml(d.pass)+'" placeholder="••••••••"><div class="msg">At least 4 characters</div></div>'}
+      ${u?'':'<div class="field" data-k="pass"><label>'+t('f_password')+' <span class="hint">'+t('password_hint')+'</span></label><input id="w_pass" type="password" value="'+escapeHtml(d.pass)+'" placeholder="••••••••"><div class="msg">'+t('pass_min')+'</div></div>'}
       <div class="form-row">
-        <div class="field" data-k="business"><label>Business or trading name</label><input id="w_business" value="${escapeHtml(d.business)}" placeholder="Chifbay Charters"><div class="msg">Required</div></div>
-        <div class="field" data-k="nif"><label>Tax number (NIF) <span class="hint">optional</span></label><input id="w_nif" value="${escapeHtml(d.nif)}" placeholder="PT512334221"></div>
+        <div class="field" data-k="business"><label>${t('f_business')}</label><input id="w_business" value="${escapeHtml(d.business)}" placeholder="${t('ph_business')}"><div class="msg">${t('required')}</div></div>
+        <div class="field" data-k="nif"><label>${t('f_nif')} <span class="hint">${t('hint_optional')}</span></label><input id="w_nif" value="${escapeHtml(d.nif)}" placeholder="PT512334221"></div>
       </div>
       <div class="form-row">
-        <div class="field" data-k="phone"><label>Phone</label><input id="w_phone" value="${escapeHtml(d.phone)}" placeholder="+351 291 000 111"><div class="msg">Required</div></div>
-        <div class="field" data-k="base"><label>Where are you based</label><input id="w_base" value="${escapeHtml(d.base)}" placeholder="Funchal, Madeira"><div class="msg">Required</div></div>
+        <div class="field" data-k="phone"><label>${t('f_phone')}</label><input id="w_phone" value="${escapeHtml(d.phone)}" placeholder="+351 291 000 111"><div class="msg">${t('required')}</div></div>
+        <div class="field" data-k="base"><label>${t('f_base')}</label><input id="w_base" value="${escapeHtml(d.base)}" placeholder="Funchal, Madeira"><div class="msg">${t('required')}</div></div>
       </div>`;
   }
   if(wizStep===2){
-    return `<h2>About you</h2><p class="sub">Travellers book people, not just listings. Tell them who they are meeting.</p>
-      <div class="field" data-k="about"><label>Short bio</label><textarea id="w_about" placeholder="Skipper born in Câmara de Lobos, ten years running private charters...">${escapeHtml(d.about)}</textarea><div class="msg">Tell us a little about you</div></div>
+    const sel=(d.languages||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const chips=HOST_LANGS.map(l=>{const on=sel.includes(l);return '<button type="button" class="lang-chip'+(on?' on':'')+'" data-lang="'+l+'"><span class="c">'+(on?'✓':'+')+'</span>'+l+'</button>';}).join('');
+    return `<h2>${t('wizlabel_2')}</h2><p class="sub">${t('step2_sub')}</p>
+      <div class="field" data-k="about"><label>${t('f_bio')}</label><textarea id="w_about" placeholder="${t('ph_bio')}">${escapeHtml(d.about)}</textarea><div class="msg">${t('bio_msg')}</div></div>
+      <div class="field" data-k="languages"><label>${t('f_langs')} <span class="hint">${t('langs_hint')}</span></label>
+        <div class="lang-pick" id="w_languages">${chips}</div><div class="msg">${t('required')}</div></div>
       <div class="form-row">
-        <div class="field" data-k="languages"><label>Languages you host in</label><input id="w_languages" value="${escapeHtml(d.languages)}" placeholder="Portuguese, English, French"><div class="msg">Required</div></div>
-        <div class="field"><label>Years hosting <span class="hint">optional</span></label><input id="w_years" value="${escapeHtml(d.years)}" placeholder="10"></div>
-      </div>
-      <div class="field"><label>Main category</label>
-        <select id="w_category">${CATS.map(c=>'<option value="'+c.id+'" '+(c.id===d.category?'selected':'')+'>'+c.label+'</option>').join('')}</select></div>`;
+        <div class="field"><label>${t('f_years')} <span class="hint">${t('hint_optional')}</span></label><input id="w_years" value="${escapeHtml(d.years)}" placeholder="10"></div>
+        <div class="field"><label>${t('f_maincat')}</label>
+          <select id="w_category">${CATS.map(c=>'<option value="'+c.id+'" '+(c.id===d.category?'selected':'')+'>'+catLabel(c)+'</option>').join('')}</select></div>
+      </div>`;
   }
   if(wizStep===3){
-    return `<h2>Verification documents</h2><p class="sub">Our team checks these within 24 hours. Nothing goes live until you are approved.</p>
-      ${docBlock('id','Government ID','Passport or national ID card')}
-      ${docBlock('license','Activity licence','Tour, skipper or local activity licence')}
-      ${docBlock('insurance','Liability insurance','Public liability cover for your activity')}`;
+    return `<h2>${t('wizlabel_3')}</h2><p class="sub">${t('step3_sub')}</p>
+      ${docBlock('id',t('doc_id_t'),t('doc_id_d'))}
+      ${docBlock('license',t('doc_license_t'),t('doc_license_d'))}
+      ${docBlock('insurance',t('doc_ins_t'),t('doc_ins_d'))}`;
   }
   if(wizStep===4){
     const e=d.exp;
-    return `<h2>Your first experience</h2><p class="sub">You can add more later. This one goes live once both you and the listing are approved.</p>
-      <div class="field" data-k="exp_title"><label>Title</label><input id="w_exp_title" value="${escapeHtml(e.title)}" placeholder="Private Sunset Yacht Cruise"><div class="msg">Required</div></div>
-      <div class="field" data-k="exp_summary"><label>One line summary</label><input id="w_exp_summary" value="${escapeHtml(e.summary)}" placeholder="Sail the south coast at golden hour with a swim stop"><div class="msg">Required</div></div>
+    return `<h2>${t('wizlabel_4')}</h2><p class="sub">${t('step4_sub')}</p>
+      <div class="field" data-k="exp_title"><label>${t('f_title')}</label><input id="w_exp_title" value="${escapeHtml(e.title)}" placeholder="Private Sunset Yacht Cruise"><div class="msg">${t('required')}</div></div>
+      <div class="field" data-k="exp_summary"><label>${t('f_summary')}</label><input id="w_exp_summary" value="${escapeHtml(e.summary)}" placeholder="Sail the south coast at golden hour with a swim stop"><div class="msg">${t('required')}</div></div>
       <div class="form-row">
-        <div class="field"><label>Category</label><select id="w_exp_category">${CATS.map(c=>'<option value="'+c.id+'" '+(c.id===e.category?'selected':'')+'>'+c.label+'</option>').join('')}</select></div>
-        <div class="field"><label>Region</label><select id="w_exp_region">${REGIONS.map(r=>'<option '+(r===e.region?'selected':'')+'>'+r+'</option>').join('')}</select></div>
+        <div class="field"><label>${t('f_category')}</label><select id="w_exp_category">${CATS.map(c=>'<option value="'+c.id+'" '+(c.id===e.category?'selected':'')+'>'+catLabel(c)+'</option>').join('')}</select></div>
+        <div class="field"><label>${t('f_region')}</label><select id="w_exp_region">${REGIONS.map(r=>'<option '+(r===e.region?'selected':'')+'>'+r+'</option>').join('')}</select></div>
       </div>
-      <div class="field" data-k="exp_location"><label>Meeting point</label><input id="w_exp_location" value="${escapeHtml(e.location)}" placeholder="Funchal Marina"><div class="msg">Required</div></div>
+      <div class="field" data-k="exp_location"><label>${t('f_meeting')}</label><input id="w_exp_location" value="${escapeHtml(e.location)}" placeholder="Funchal Marina"><div class="msg">${t('required')}</div></div>
       <div class="form-row">
-        <div class="field" data-k="exp_price"><label>Price per person (€)</label><input id="w_exp_price" type="number" min="1" value="${e.price}" placeholder="95"><div class="msg">Enter a price</div></div>
-        <div class="field" data-k="exp_durationHrs"><label>Duration (hours)</label><input id="w_exp_durationHrs" type="number" min="0.5" step="0.5" value="${e.durationHrs}" placeholder="3"><div class="msg">Enter a duration</div></div>
+        <div class="field" data-k="exp_price"><label>${t('f_price')}</label><input id="w_exp_price" type="number" min="1" value="${e.price}" placeholder="95"><div class="msg">${t('msg_enterprice')}</div></div>
+        <div class="field" data-k="exp_durationHrs"><label>${t('f_duration')}</label><input id="w_exp_durationHrs" type="number" min="0.5" step="0.5" value="${e.durationHrs}" placeholder="3"><div class="msg">${t('msg_enterduration')}</div></div>
       </div>
       <div class="form-row">
-        <div class="field" data-k="exp_groupMax"><label>Max group size</label><input id="w_exp_groupMax" type="number" min="1" value="${e.groupMax}" placeholder="8"><div class="msg">Enter a group size</div></div>
-        <div class="field"><label>Cover image URL <span class="hint">optional</span></label><input id="w_exp_img" value="${escapeHtml(e.img)}" placeholder="https://..."></div>
+        <div class="field" data-k="exp_groupMax"><label>${t('f_groupmax')}</label><input id="w_exp_groupMax" type="number" min="1" value="${e.groupMax}" placeholder="8"><div class="msg">${t('msg_entergroup')}</div></div>
+        <div class="field"><label>${t('f_coverimg')} <span class="hint">${t('hint_optional')}</span></label><input id="w_exp_img" value="${escapeHtml(e.img)}" placeholder="https://..."></div>
       </div>`;
   }
   // step 5 review
   const e=d.exp; const c=catOf(e.category);
-  const docState=k=> d.docs[k] ? '✓ '+d.docs[k].name : 'Not uploaded';
-  const earn = e.price? money(+e.price*+(e.groupMax||1)) : '—';
-  return `<h2>Review and submit</h2><p class="sub">Check everything, then send it to our team for verification.</p>
+  const docState=k=> d.docs[k] ? '✓ '+d.docs[k].name : t('notuploaded');
+  return `<h2>${t('wizlabel_5')}</h2><p class="sub">${t('step5_sub')}</p>
     <div class="review-list">
-      <div class="rl"><span class="k">Host</span><span class="v">${escapeHtml(d.name||'—')}</span></div>
-      <div class="rl"><span class="k">Business</span><span class="v">${escapeHtml(d.business||'—')}</span></div>
-      <div class="rl"><span class="k">Based in</span><span class="v">${escapeHtml(d.base||'—')}</span></div>
-      <div class="rl"><span class="k">Languages</span><span class="v">${escapeHtml(d.languages||'—')}</span></div>
-      <div class="rl"><span class="k">ID document</span><span class="v">${docState('id')}</span></div>
-      <div class="rl"><span class="k">Activity licence</span><span class="v">${docState('license')}</span></div>
-      <div class="rl"><span class="k">Insurance</span><span class="v">${docState('insurance')}</span></div>
-      <div class="rl"><span class="k">First listing</span><span class="v">${escapeHtml(e.title||'—')}</span></div>
-      <div class="rl"><span class="k">Price</span><span class="v">${e.price?money(e.price)+' per person':'—'}</span></div>
+      <div class="rl"><span class="k">${t('rl_host')}</span><span class="v">${escapeHtml(d.name||'—')}</span></div>
+      <div class="rl"><span class="k">${t('rl_business')}</span><span class="v">${escapeHtml(d.business||'—')}</span></div>
+      <div class="rl"><span class="k">${t('rl_basedin')}</span><span class="v">${escapeHtml(d.base||'—')}</span></div>
+      <div class="rl"><span class="k">${t('rl_langs')}</span><span class="v">${escapeHtml(d.languages||'—')}</span></div>
+      <div class="rl"><span class="k">${t('rl_iddoc')}</span><span class="v">${docState('id')}</span></div>
+      <div class="rl"><span class="k">${t('rl_license')}</span><span class="v">${docState('license')}</span></div>
+      <div class="rl"><span class="k">${t('rl_insurance')}</span><span class="v">${docState('insurance')}</span></div>
+      <div class="rl"><span class="k">${t('rl_firstlisting')}</span><span class="v">${escapeHtml(e.title||'—')}</span></div>
+      <div class="rl"><span class="k">${t('rl_price')}</span><span class="v">${e.price?money(e.price)+' '+t('per_person'):'—'}</span></div>
     </div>
-    <div class="banner ok" style="margin-top:20px"><span class="ic">⚡</span><div>A full group on this listing earns you <b>${e.price?money((e.price*(e.groupMax||1))*(1-COMMISSION)):'—'}</b> after our flat 15 percent commission.</div></div>
-    <div class="agree"><input type="checkbox" id="w_agree"><label>I confirm my documents are genuine and I accept the flat 15 percent commission and host terms.</label></div>`;
+    <div class="banner ok" style="margin-top:20px"><span class="ic">⚡</span><div>${t('earn_banner',{amount:(e.price?money((e.price*(e.groupMax||1))*(1-COMMISSION)):'—')})}</div></div>
+    <div class="agree"><input type="checkbox" id="w_agree"><label>${t('agree_label')}</label></div>`;
 }
 function docBlock(key,title,desc){
   const f=wizData.docs[key];
   return `<div class="doc-block"><div class="dl">${title}</div>
     ${ f ? fileChip(key,f) :
-    '<div class="drop" data-doc="'+key+'"><div class="ic">⬆</div><b>Upload document</b><span>'+desc+' · PDF, JPG or PNG</span><input type="file" accept="image/*,application/pdf" data-doc-input="'+key+'" style="display:none"></div>' }
+    '<div class="drop" data-doc="'+key+'"><div class="ic">⬆</div><b>'+t('doc_upload')+'</b><span>'+t('doc_formats',{desc:desc})+'</span><input type="file" accept="image/*,application/pdf" data-doc-input="'+key+'" style="display:none"></div>' }
   </div>`;
 }
 function fileChip(key,f){
@@ -1120,11 +1629,20 @@ function bindHost(){
       // store small images as preview only
       wizData.docs[key]=rec;
       rerenderWiz();
-      toast('Uploaded '+f.name);
+      toast(t('uploaded_toast',{name:f.name}));
     });
   });
   card.querySelectorAll('[data-doc-remove]').forEach(x=>{
     x.addEventListener('click',()=>{ wizData.docs[x.getAttribute('data-doc-remove')]=null; rerenderWiz(); });
+  });
+  // language multi-select chips
+  card.querySelectorAll('.lang-chip').forEach(ch=>{
+    ch.addEventListener('click',()=>{
+      const on=ch.classList.toggle('on');
+      const mark=ch.querySelector('.c'); if(mark) mark.textContent=on?'✓':'+';
+      wizData.languages=[...card.querySelectorAll('.lang-chip.on')].map(c=>c.getAttribute('data-lang')).join(', ');
+      const field=ch.closest('.field'); if(field) field.classList.remove('err');
+    });
   });
 }
 function rerenderWiz(){
@@ -1138,7 +1656,9 @@ function collectWiz(){
     if(document.getElementById('w_pass')) wizData.pass=document.getElementById('w_pass').value;
     wizData.business=g('w_business'); wizData.nif=g('w_nif'); wizData.phone=g('w_phone'); wizData.base=g('w_base');
   } else if(wizStep===2){
-    wizData.about=g('w_about'); wizData.languages=g('w_languages'); wizData.years=g('w_years'); wizData.category=g('w_category');
+    wizData.about=g('w_about'); wizData.years=g('w_years'); wizData.category=g('w_category');
+    const lp=document.getElementById('w_languages');
+    if(lp) wizData.languages=[...lp.querySelectorAll('.lang-chip.on')].map(c=>c.getAttribute('data-lang')).join(', ');
   } else if(wizStep===4){
     const e=wizData.exp;
     e.title=g('w_exp_title'); e.summary=g('w_exp_summary'); e.category=g('w_exp_category'); e.region=g('w_exp_region');
@@ -1161,7 +1681,7 @@ function validateWiz(){
     if(!wizData.about) fail('about');
     if(!wizData.languages) fail('languages');
   } else if(wizStep===3){
-    if(!wizData.docs.id||!wizData.docs.license||!wizData.docs.insurance){ toast('Upload all three documents to continue','err'); ok=false; }
+    if(!wizData.docs.id||!wizData.docs.license||!wizData.docs.insurance){ toast(t('upload_all_docs'),'err'); ok=false; }
   } else if(wizStep===4){
     const e=wizData.exp;
     if(!e.title) fail('exp_title'); if(!e.summary) fail('exp_summary'); if(!e.location) fail('exp_location');
@@ -1173,7 +1693,7 @@ function validateWiz(){
 function wizNext(){ if(!validateWiz()) return; if(wizStep<5){ wizStep++; router(); } }
 function wizBack(){ collectWiz(); if(wizStep>1){ wizStep--; router(); } }
 function wizSubmit(){
-  if(!document.getElementById('w_agree').checked){ toast('Please accept the terms to submit','err'); return; }
+  if(!document.getElementById('w_agree').checked){ toast(t('accept_terms_toast'),'err'); return; }
   const u=me();
   const users=DB.users();
   let host=u;
@@ -1184,7 +1704,7 @@ function wizSubmit(){
     users[idx].host=buildHostProfile();
     host=users[idx];
   }else{
-    if(users.some(x=>x.email.toLowerCase()===wizData.email.toLowerCase())){ toast('That email already has an account, sign in first','err'); return; }
+    if(users.some(x=>x.email.toLowerCase()===wizData.email.toLowerCase())){ toast(t('email_taken_toast'),'err'); return; }
     host={id:uid(),name:wizData.name,email:wizData.email,pass:wizData.pass,role:'host',createdAt:Date.now(),host:buildHostProfile()};
     users.push(host);
   }
@@ -1204,11 +1724,11 @@ function wizSubmit(){
     docs:{id:null,license:null,insurance:null},
     exp:{title:'',category:'ocean',region:'Madeira',location:'',price:'',durationHrs:'',groupMax:'',summary:'',img:''} };
   openModal(`
-    <div class="modal-head"><h3>Application submitted</h3><span class="x" onclick="closeModal()">×</span></div>
+    <div class="modal-head"><h3>${t('app_submitted_title')}</h3><span class="x" onclick="closeModal()">×</span></div>
     <div class="modal-body" style="text-align:center">
       <div class="confirm-mark">⏱</div>
-      <p class="muted-line">Thanks ${escapeHtml(hostName.split(' ')[0])}. Our team will verify your documents and your first listing within <b style="color:var(--ink)">24 hours</b>. You will go live the moment you are approved.</p>
-      <button class="btn btn-primary btn-block btn-lg" style="margin-top:18px" onclick="closeModal();location.hash='#/dashboard'">Go to host dashboard</button>
+      <p class="muted-line">${t('app_submitted_p',{name:escapeHtml(hostName.split(' ')[0])})}</p>
+      <button class="btn btn-primary btn-block btn-lg" style="margin-top:18px" onclick="closeModal();location.hash='#/dashboard'">${t('host_already_btn')}</button>
     </div>`);
 }
 function buildHostProfile(){
@@ -1234,29 +1754,29 @@ function travelerDashboard(u){
   const mine=DB.bookings().filter(b=>b.userId===u.id);
   const upcoming=mine.filter(b=>new Date(b.date)>=new Date(new Date().toDateString()));
   return `<section class="dash"><div class="wrap">
-    <div class="dash-head"><div><h1 class="serif">Hello, ${escapeHtml(u.name.split(' ')[0])}</h1><p>Your trips and bookings in one place.</p></div>
-      <a href="#/explore" class="btn btn-primary">Find an experience</a></div>
+    <div class="dash-head"><div><h1 class="serif">${t('dash_hello',{name:escapeHtml(u.name.split(' ')[0])})}</h1><p>${t('dash_trav_sub')}</p></div>
+      <a href="#/explore" class="btn btn-primary">${t('dash_find')}</a></div>
     <div class="stat-grid">
-      <div class="stat-card"><div class="k">Total bookings</div><div class="v">${mine.length}</div></div>
-      <div class="stat-card"><div class="k">Upcoming</div><div class="v">${upcoming.length}</div></div>
-      <div class="stat-card"><div class="k">Total spent</div><div class="v">${money(mine.reduce((s,b)=>s+b.subtotal,0))}</div></div>
-      <div class="stat-card"><div class="k">Become a host</div><div class="v" style="font-size:15px;font-family:Inter;font-weight:600;margin-top:12px"><a href="#/host" style="color:var(--ocean)">Start hosting →</a></div></div>
+      <div class="stat-card"><div class="k">${t('stat_totalbookings')}</div><div class="v">${mine.length}</div></div>
+      <div class="stat-card"><div class="k">${t('stat_upcoming')}</div><div class="v">${upcoming.length}</div></div>
+      <div class="stat-card"><div class="k">${t('stat_totalspent')}</div><div class="v">${money(mine.reduce((s,b)=>s+b.subtotal,0))}</div></div>
+      <div class="stat-card"><div class="k">${t('stat_becomehost')}</div><div class="v" style="font-size:15px;font-family:Inter;font-weight:600;margin-top:12px"><a href="#/host" style="color:var(--ocean)">${t('start_hosting')}</a></div></div>
     </div>
-    <h2 class="h-md" style="margin:12px 0 18px">Your bookings</h2>
+    <h2 class="h-md" style="margin:12px 0 18px">${t('your_bookings')}</h2>
     ${mine.length? mine.map(b=>bookingRow(b,'traveler')).join('')
-      : '<div class="empty"><div class="big">🎒</div><h3 class="h-md">No bookings yet</h3><p style="margin-top:8px">When you book an experience it shows up here.</p><a href="#/explore" class="btn btn-primary" style="margin-top:18px">Explore experiences</a></div>'}
+      : '<div class="empty"><div class="big">🎒</div><h3 class="h-md">'+t('nobookings_t')+'</h3><p style="margin-top:8px">'+t('nobookings_p')+'</p><a href="#/explore" class="btn btn-primary" style="margin-top:18px">'+t('explore_experiences')+'</a></div>'}
   </div></section>`;
 }
 function bookingRow(b,context){
   const e=expById(b.expId);
   const c=e?catOf(e.category):CATS[0];
   const right = context==='host'
-    ? '<div class="money">'+money(b.payout)+'</div><div class="code">payout · '+money(b.commission)+' fee</div>'
+    ? '<div class="money">'+money(b.payout)+'</div><div class="code">'+t('payout_word',{fee:money(b.commission)})+'</div>'
     : '<div class="money">'+money(b.subtotal)+'</div><div class="code">'+b.codeStr+'</div>';
-  const sub = context==='host' ? (b.customer.name+' · '+b.guests+' guests') : (fmtDate(b.date)+' · '+b.guests+' guests');
+  const sub = context==='host' ? (b.customer.name+' · '+b.guests+' '+guestWord(b.guests)) : (fmtDate(b.date)+' · '+b.guests+' '+guestWord(b.guests));
   return '<div class="lcard"><div class="thumb '+c.g+'" '+(e?'data-photo="'+e.img+'"':'')+'></div>'
     +'<div class="main"><div class="t">'+b.expTitle+'</div><div class="s">'+sub+'</div></div>'
-    +'<div class="right"><span class="pill '+b.status+'">'+b.status+'</span>'+right+'</div></div>';
+    +'<div class="right"><span class="pill '+b.status+'">'+statusLabel(b.status)+'</span>'+right+'</div></div>';
 }
 function hostDashboard(u){
   const hp=u.host||{};
@@ -1268,44 +1788,44 @@ function hostDashboard(u){
   const liveCount=myExp.filter(e=>e.status==='live').length;
   const pendingCount=myExp.filter(e=>e.status==='pending').length;
   const banner = hp.status==='verified'
-    ? '<div class="banner ok"><span class="ic">✓</span><div>You are a <b>verified host</b>. New listings still pass a quick content check before going live.</div></div>'
+    ? '<div class="banner ok"><span class="ic">✓</span><div>'+t('banner_verified')+'</div></div>'
     : hp.status==='rejected'
-    ? '<div class="banner pending" style="background:#fdecea;border-color:#f4cfcb;color:#a23a35"><span class="ic">⚠</span><div>Your application needs changes. Our team left a note, please re submit your documents.</div></div>'
-    : '<div class="banner pending"><span class="ic">⏱</span><div>Your account is <b>under review</b>. We verify within 24 hours. Listings stay hidden until you are approved.</div></div>';
+    ? '<div class="banner pending" style="background:#fdecea;border-color:#f4cfcb;color:#a23a35"><span class="ic">⚠</span><div>'+t('banner_rejected')+'</div></div>'
+    : '<div class="banner pending"><span class="ic">⏱</span><div>'+t('banner_review')+'</div></div>';
 
-  const tabs=[['overview','Overview'],['listings','Listings'],['bookings','Bookings'],['account','Account']];
+  const tabs=[['overview',t('tab_overview')],['listings',t('tab_listings')],['bookings',t('tab_bookings')],['account',t('tab_account')]];
   let body='';
   if(dashTab==='overview'){
     body=`<div class="stat-grid">
-      <div class="stat-card"><div class="k">Gross sales</div><div class="v">${money(gross)}</div><div class="sub">${myBk.length} bookings</div></div>
-      <div class="stat-card"><div class="k">Commission (15%)</div><div class="v">${money(fees)}</div><div class="sub">platform fee</div></div>
-      <div class="stat-card"><div class="k">Your payout</div><div class="v" style="color:var(--ocean-deep)">${money(payout)}</div><div class="sub">net to you</div></div>
-      <div class="stat-card"><div class="k">Live listings</div><div class="v">${liveCount}<small> / ${myExp.length}</small></div><div class="sub">${pendingCount} in review</div></div>
+      <div class="stat-card"><div class="k">${t('stat_gross')}</div><div class="v">${money(gross)}</div><div class="sub">${t('bookings_word',{n:myBk.length})}</div></div>
+      <div class="stat-card"><div class="k">${t('stat_commission')}</div><div class="v">${money(fees)}</div><div class="sub">${t('platform_fee')}</div></div>
+      <div class="stat-card"><div class="k">${t('stat_payout')}</div><div class="v" style="color:var(--ocean-deep)">${money(payout)}</div><div class="sub">${t('net_toyou')}</div></div>
+      <div class="stat-card"><div class="k">${t('stat_live')}</div><div class="v">${liveCount}<small> / ${myExp.length}</small></div><div class="sub">${t('inreview',{n:pendingCount})}</div></div>
     </div>
-    <h2 class="h-md" style="margin:8px 0 16px">Recent bookings</h2>
-    ${myBk.length? myBk.slice(0,5).map(b=>bookingRow(b,'host')).join('') : '<p class="muted-line">No bookings yet. Once a listing is live, bookings land here.</p>'}`;
+    <h2 class="h-md" style="margin:8px 0 16px">${t('recent_bookings')}</h2>
+    ${myBk.length? myBk.slice(0,5).map(b=>bookingRow(b,'host')).join('') : '<p class="muted-line">'+t('nobk_host')+'</p>'}`;
   } else if(dashTab==='listings'){
     body=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-        <h2 class="h-md">Your listings</h2>
-        <button class="btn btn-primary btn-sm" onclick="openNewListing()" ${hp.status!=='verified'?'disabled title="Verify your account first"':''}>+ New listing</button></div>
-      ${ hp.status!=='verified' ? '<div class="banner pending"><span class="ic">⏱</span><div>You can add new listings once your account is verified.</div></div>':''}
-      ${myExp.length? myExp.map(e=>listingRow(e)).join('') : '<p class="muted-line">No listings yet.</p>'}`;
+        <h2 class="h-md">${t('your_listings')}</h2>
+        <button class="btn btn-primary btn-sm" onclick="openNewListing()" ${hp.status!=='verified'?'disabled title="'+t('verify_first')+'"':''}>${t('new_listing')}</button></div>
+      ${ hp.status!=='verified' ? '<div class="banner pending"><span class="ic">⏱</span><div>'+t('listings_locked')+'</div></div>':''}
+      ${myExp.length? myExp.map(e=>listingRow(e)).join('') : '<p class="muted-line">'+t('nolistings')+'</p>'}`;
   } else if(dashTab==='bookings'){
-    body=`<h2 class="h-md" style="margin-bottom:16px">All bookings</h2>
-      ${myBk.length? myBk.map(b=>bookingRow(b,'host')).join('') : '<p class="muted-line">No bookings yet.</p>'}`;
+    body=`<h2 class="h-md" style="margin-bottom:16px">${t('all_bookings')}</h2>
+      ${myBk.length? myBk.map(b=>bookingRow(b,'host')).join('') : '<p class="muted-line">'+t('nobk_host')+'</p>'}`;
   } else {
-    body=`<h2 class="h-md" style="margin-bottom:16px">Account and verification</h2>
+    body=`<h2 class="h-md" style="margin-bottom:16px">${t('account_verification')}</h2>
       <div class="review-list" style="max-width:560px">
-        <div class="rl"><span class="k">Status</span><span class="v"><span class="pill ${hp.status||'pending'}">${hp.status||'pending'}</span></span></div>
-        <div class="rl"><span class="k">Business</span><span class="v">${escapeHtml(hp.business||'—')}</span></div>
-        <div class="rl"><span class="k">Based in</span><span class="v">${escapeHtml(hp.base||'—')}</span></div>
-        <div class="rl"><span class="k">Phone</span><span class="v">${escapeHtml(hp.phone||'—')}</span></div>
-        <div class="rl"><span class="k">Languages</span><span class="v">${escapeHtml(hp.languages||'—')}</span></div>
-        <div class="rl"><span class="k">Documents</span><span class="v">${(hp.docs||[]).length} uploaded</span></div>
+        <div class="rl"><span class="k">${t('rl_status')}</span><span class="v"><span class="pill ${hp.status||'pending'}">${statusLabel(hp.status||'pending')}</span></span></div>
+        <div class="rl"><span class="k">${t('rl_business')}</span><span class="v">${escapeHtml(hp.business||'—')}</span></div>
+        <div class="rl"><span class="k">${t('rl_basedin')}</span><span class="v">${escapeHtml(hp.base||'—')}</span></div>
+        <div class="rl"><span class="k">${t('rl_phone')}</span><span class="v">${escapeHtml(hp.phone||'—')}</span></div>
+        <div class="rl"><span class="k">${t('rl_langs')}</span><span class="v">${escapeHtml(hp.languages||'—')}</span></div>
+        <div class="rl"><span class="k">${t('rl_documents')}</span><span class="v">${t('docs_uploaded',{n:(hp.docs||[]).length})}</span></div>
       </div>`;
   }
   return `<section class="dash"><div class="wrap">
-    <div class="dash-head"><div><h1 class="serif">${escapeHtml(hp.business||u.name)}</h1><p>Host dashboard · ${escapeHtml(hp.base||'')}</p></div></div>
+    <div class="dash-head"><div><h1 class="serif">${escapeHtml(hp.business||u.name)}</h1><p>${t('host_dash_sub',{base:escapeHtml(hp.base||'')})}</p></div></div>
     ${banner}
     <div class="tabs">${tabs.map(t=>'<button class="'+(dashTab===t[0]?'on':'')+'" onclick="setDashTab(\''+t[0]+'\')">'+t[1]+(t[0]==='listings'&&pendingCount?'<span class="badge">'+pendingCount+'</span>':'')+'</button>').join('')}</div>
     ${body}
@@ -1315,40 +1835,40 @@ function setDashTab(t){ dashTab=t; router(); }
 function listingRow(e){
   const c=catOf(e.category);
   return '<div class="lcard"><div class="thumb '+c.g+'" data-photo="'+e.img+'"></div>'
-    +'<div class="main"><div class="t">'+e.title+'</div><div class="s">'+e.location+', '+e.region+' · '+money(e.price)+' pp · up to '+e.groupMax+'</div></div>'
-    +'<div class="right"><span class="pill '+e.status+'">'+e.status+'</span>'
-    +(e.status==='live'?'<a class="code" href="#/experience/'+e.id+'">view live →</a>':'<span class="code">'+(e.status==='pending'?'awaiting review':'needs changes')+'</span>')
+    +'<div class="main"><div class="t">'+e.title+'</div><div class="s">'+e.location+', '+e.region+' · '+money(e.price)+' '+t('per_person')+' · '+t('fact_upto',{n:e.groupMax})+'</div></div>'
+    +'<div class="right"><span class="pill '+e.status+'">'+statusLabel(e.status)+'</span>'
+    +(e.status==='live'?'<a class="code" href="#/experience/'+e.id+'">'+t('view_live')+'</a>':'<span class="code">'+(e.status==='pending'?t('awaiting_review'):t('needs_changes'))+'</span>')
     +'</div></div>';
 }
 function openNewListing(){
   const u=me();
   openModal(`
-    <div class="modal-head"><h3>New listing</h3><span class="x" onclick="closeModal()">×</span></div>
+    <div class="modal-head"><h3>${t('nl_title')}</h3><span class="x" onclick="closeModal()">×</span></div>
     <div class="modal-body">
-      <div class="field"><label>Title</label><input id="nl_title" placeholder="Private kayak tour"></div>
-      <div class="field"><label>One line summary</label><input id="nl_summary" placeholder="Paddle into hidden sea caves"></div>
+      <div class="field"><label>${t('f_title')}</label><input id="nl_title" placeholder="Private kayak tour"></div>
+      <div class="field"><label>${t('f_summary')}</label><input id="nl_summary" placeholder="Paddle into hidden sea caves"></div>
       <div class="form-row">
-        <div class="field"><label>Category</label><select id="nl_cat">${CATS.map(c=>'<option value="'+c.id+'">'+c.label+'</option>').join('')}</select></div>
-        <div class="field"><label>Region</label><select id="nl_region">${REGIONS.map(r=>'<option>'+r+'</option>').join('')}</select></div>
+        <div class="field"><label>${t('f_category')}</label><select id="nl_cat">${CATS.map(c=>'<option value="'+c.id+'">'+catLabel(c)+'</option>').join('')}</select></div>
+        <div class="field"><label>${t('f_region')}</label><select id="nl_region">${REGIONS.map(r=>'<option>'+r+'</option>').join('')}</select></div>
       </div>
-      <div class="field"><label>Meeting point</label><input id="nl_loc" placeholder="Garajau"></div>
+      <div class="field"><label>${t('f_meeting')}</label><input id="nl_loc" placeholder="Garajau"></div>
       <div class="form-row">
-        <div class="field"><label>Price pp (€)</label><input id="nl_price" type="number" placeholder="42"></div>
-        <div class="field"><label>Duration (h)</label><input id="nl_dur" type="number" step="0.5" placeholder="2"></div>
+        <div class="field"><label>${t('nl_price')}</label><input id="nl_price" type="number" placeholder="42"></div>
+        <div class="field"><label>${t('nl_dur')}</label><input id="nl_dur" type="number" step="0.5" placeholder="2"></div>
       </div>
-      <div class="field"><label>Max group</label><input id="nl_max" type="number" placeholder="8"></div>
-      <button class="btn btn-primary btn-block btn-lg" id="nl_go">Submit for review</button>
-      <p class="bk-note">New listings are checked before going live</p>
+      <div class="field"><label>${t('nl_max')}</label><input id="nl_max" type="number" placeholder="8"></div>
+      <button class="btn btn-primary btn-block btn-lg" id="nl_go">${t('submit_review')}</button>
+      <p class="bk-note">${t('nl_note')}</p>
     </div>`);
   document.getElementById('nl_go').onclick=()=>{
     const g=id=>document.getElementById(id).value.trim();
     const title=g('nl_title'),summary=g('nl_summary'),loc=g('nl_loc'),price=g('nl_price'),dur=g('nl_dur'),max=g('nl_max');
-    if(!title||!summary||!loc||!price||!dur||!max){ toast('Fill all fields','err'); return; }
+    if(!title||!summary||!loc||!price||!dur||!max){ toast(t('fill_all_toast'),'err'); return; }
     const exp={id:uid(),hostId:u.id,hostName:u.name,title,category:g('nl_cat'),region:g('nl_region'),location:loc,
       price:+price,durationHrs:+dur,groupMax:+max,summary,desc:[summary],inc:['Local guide','Safety briefing'],
       img:IMG('1505228395891-9a51e7e86bf6'),gallery:[],rating:'0.00',reviews:0,status:'pending',createdAt:Date.now()};
     const arr=DB.experiences(); arr.unshift(exp); DB.saveExperiences(arr);
-    closeModal(); toast('Listing submitted for review'); dashTab='listings'; router();
+    closeModal(); toast(t('listing_submitted_toast')); dashTab='listings'; router();
   };
 }
 
@@ -1356,40 +1876,40 @@ function openNewListing(){
 let adminTab='hosts';
 function viewAdmin(){
   const u=me();
-  if(!u || u.role!=='admin'){ location.hash='#/auth'; toast('Admin access only','err'); return '<section class="dash"><div class="wrap"></div></section>'; }
+  if(!u || u.role!=='admin'){ location.hash='#/auth'; toast(t('admin_only_toast'),'err'); return '<section class="dash"><div class="wrap"></div></section>'; }
   const users=DB.users(), exps=DB.experiences(), bks=DB.bookings();
   const pendingHosts=users.filter(x=>x.role==='host'&&x.host&&x.host.status==='pending');
   const pendingExp=exps.filter(e=>e.status==='pending');
   const revenue=bks.reduce((s,b)=>s+b.commission,0);
   const gmv=bks.reduce((s,b)=>s+b.subtotal,0);
 
-  const tabs=[['hosts','Host applications',pendingHosts.length],['listings','Listing review',pendingExp.length],['bookings','Bookings',0],['users','Users',0]];
+  const tabs=[['hosts',t('atab_hosts'),pendingHosts.length],['listings',t('atab_listings'),pendingExp.length],['bookings',t('atab_bookings'),0],['users',t('atab_users'),0]];
   let body='';
   if(adminTab==='hosts'){
     body = pendingHosts.length
       ? pendingHosts.map(h=>hostAppCard(h)).join('')
-      : '<div class="empty"><div class="big">✓</div><h3 class="h-md">No applications waiting</h3><p style="margin-top:8px">New host applications will appear here for review.</p></div>';
+      : '<div class="empty"><div class="big">✓</div><h3 class="h-md">'+t('noapps_t')+'</h3><p style="margin-top:8px">'+t('noapps_p')+'</p></div>';
     const verified=users.filter(x=>x.role==='host'&&x.host&&x.host.status==='verified');
-    if(verified.length) body+='<h2 class="h-md" style="margin:30px 0 14px">Verified hosts</h2>'+verified.map(h=>hostAppCard(h,true)).join('');
+    if(verified.length) body+='<h2 class="h-md" style="margin:30px 0 14px">'+t('verified_hosts')+'</h2>'+verified.map(h=>hostAppCard(h,true)).join('');
   } else if(adminTab==='listings'){
     body = pendingExp.length
       ? pendingExp.map(e=>listingReviewCard(e)).join('')
-      : '<div class="empty"><div class="big">✓</div><h3 class="h-md">Nothing to review</h3><p style="margin-top:8px">Pending listings show up here.</p></div>';
+      : '<div class="empty"><div class="big">✓</div><h3 class="h-md">'+t('nothing_review_t')+'</h3><p style="margin-top:8px">'+t('nothing_review_p')+'</p></div>';
   } else if(adminTab==='bookings'){
-    body = '<div class="result-meta"><span><b style="color:var(--ink)">'+bks.length+'</b> bookings · '+money(gmv)+' gross</span></div>'
-      + (bks.length? bks.map(b=>adminBookingRow(b)).join('') : '<p class="muted-line">No bookings yet.</p>');
+    body = '<div class="result-meta"><span>'+t('bookings_gross',{n:'<b style="color:var(--ink)">'+bks.length+'</b>',gmv:money(gmv)})+'</span></div>'
+      + (bks.length? bks.map(b=>adminBookingRow(b)).join('') : '<p class="muted-line">'+t('nobk_host')+'</p>');
   } else {
     body = users.map(x=>'<div class="lcard"><div class="thumb" style="background:'+avFor(x.name)+';display:grid;place-items:center;color:#fff;font-family:Fraunces;font-weight:600;font-size:18px">'+initials(x.name)+'</div>'
       +'<div class="main"><div class="t">'+escapeHtml(x.name)+'</div><div class="s">'+escapeHtml(x.email)+'</div></div>'
-      +'<div class="right"><span class="pill '+(x.role==='admin'?'verified':x.role==='host'?'live':'pending')+'">'+x.role+'</span></div></div>').join('');
+      +'<div class="right"><span class="pill '+(x.role==='admin'?'verified':x.role==='host'?'live':'pending')+'">'+roleLabel(x.role)+'</span></div></div>').join('');
   }
   return `<section class="dash"><div class="wrap">
-    <div class="dash-head"><div><h1 class="serif">Admin desk</h1><p>Verify hosts, approve listings, watch the numbers.</p></div></div>
+    <div class="dash-head"><div><h1 class="serif">${t('admin_t')}</h1><p>${t('admin_sub')}</p></div></div>
     <div class="stat-grid">
-      <div class="stat-card"><div class="k">Platform revenue</div><div class="v" style="color:var(--ocean-deep)">${money(revenue)}</div><div class="sub">15% of ${money(gmv)} GMV</div></div>
-      <div class="stat-card"><div class="k">Pending hosts</div><div class="v">${pendingHosts.length}</div><div class="sub">awaiting review</div></div>
-      <div class="stat-card"><div class="k">Pending listings</div><div class="v">${pendingExp.length}</div><div class="sub">awaiting review</div></div>
-      <div class="stat-card"><div class="k">Live experiences</div><div class="v">${exps.filter(e=>e.status==='live').length}</div><div class="sub">${users.filter(x=>x.role==='host').length} hosts</div></div>
+      <div class="stat-card"><div class="k">${t('stat_revenue')}</div><div class="v" style="color:var(--ocean-deep)">${money(revenue)}</div><div class="sub">${t('revenue_sub',{gmv:money(gmv)})}</div></div>
+      <div class="stat-card"><div class="k">${t('stat_pendinghosts')}</div><div class="v">${pendingHosts.length}</div><div class="sub">${t('awaiting_review')}</div></div>
+      <div class="stat-card"><div class="k">${t('stat_pendinglistings')}</div><div class="v">${pendingExp.length}</div><div class="sub">${t('awaiting_review')}</div></div>
+      <div class="stat-card"><div class="k">${t('stat_liveexp')}</div><div class="v">${exps.filter(e=>e.status==='live').length}</div><div class="sub">${t('hosts_count',{n:users.filter(x=>x.role==='host').length})}</div></div>
     </div>
     <div class="tabs">${tabs.map(t=>'<button class="'+(adminTab===t[0]?'on':'')+'" onclick="setAdminTab(\''+t[0]+'\')">'+t[1]+(t[2]?'<span class="badge">'+t[2]+'</span>':'')+'</button>').join('')}</div>
     ${body}
@@ -1399,15 +1919,15 @@ function setAdminTab(t){ adminTab=t; router(); }
 function hostAppCard(h,verified){
   const hp=h.host;
   const docs=(hp.docs||[]).map(d=>'<span class="code" style="background:var(--surface);padding:3px 9px;border-radius:7px;margin-right:6px">📄 '+escapeHtml(d.name)+'</span>').join('');
-  const acts = verified ? '<span class="pill verified">✓ verified</span>'
-    : '<button class="btn btn-ok btn-sm" onclick="verifyHost(\''+h.id+'\')">Approve</button><button class="btn btn-danger btn-sm" onclick="rejectHost(\''+h.id+'\')">Reject</button>';
+  const acts = verified ? '<span class="pill verified">'+t('verified_badge')+'</span>'
+    : '<button class="btn btn-ok btn-sm" onclick="verifyHost(\''+h.id+'\')">'+t('approve')+'</button><button class="btn btn-danger btn-sm" onclick="rejectHost(\''+h.id+'\')">'+t('reject')+'</button>';
   return `<div class="lcard" style="align-items:flex-start">
     <div class="thumb" style="background:linear-gradient(135deg,${avFor(h.name)},${avFor(h.name)}cc);display:grid;place-items:center;color:#fff;font-family:Fraunces;font-weight:600;font-size:20px">${initials(h.name)}</div>
     <div class="main">
       <div class="t">${escapeHtml(hp.business||h.name)} <span class="code">· ${escapeHtml(h.name)}</span></div>
-      <div class="s">${escapeHtml(hp.base||'')} · ${escapeHtml(hp.languages||'')} · ${catOf(hp.category).label}</div>
+      <div class="s">${escapeHtml(hp.base||'')} · ${escapeHtml(hp.languages||'')} · ${catLabel(hp.category)}</div>
       <div class="muted-line" style="font-size:13px;margin:8px 0">${escapeHtml(hp.about||'')}</div>
-      <div>${docs||'<span class="code">No documents</span>'}</div>
+      <div>${docs||'<span class="code">'+t('nodocuments')+'</span>'}</div>
     </div>
     <div class="right"><div class="acts">${acts}</div></div>
   </div>`;
@@ -1415,12 +1935,12 @@ function hostAppCard(h,verified){
 function verifyHost(id){
   const users=DB.users(); const i=users.findIndex(u=>u.id===id);
   if(i<0) return; users[i].host.status='verified'; DB.saveUsers(users);
-  toast(users[i].name.split(' ')[0]+' verified'); router();
+  toast(t('verified_toast',{name:users[i].name.split(' ')[0]})); router();
 }
 function rejectHost(id){
   const users=DB.users(); const i=users.findIndex(u=>u.id===id);
   if(i<0) return; users[i].host.status='rejected'; DB.saveUsers(users);
-  toast('Host application rejected','err'); router();
+  toast(t('rejected_toast'),'err'); router();
 }
 function listingReviewCard(e){
   const host=DB.users().find(u=>u.id===e.hostId);
@@ -1430,37 +1950,37 @@ function listingReviewCard(e){
     <div class="thumb ${c.g}" data-photo="${e.img}"></div>
     <div class="main">
       <div class="t">${e.title}</div>
-      <div class="s">${e.location}, ${e.region} · ${money(e.price)} pp · up to ${e.groupMax} · ${e.durationHrs}h</div>
+      <div class="s">${e.location}, ${e.region} · ${money(e.price)} ${t('per_person')} · ${t('fact_upto',{n:e.groupMax})} · ${e.durationHrs}h</div>
       <div class="muted-line" style="font-size:13px;margin-top:6px">${escapeHtml(e.summary)}</div>
-      <div class="code" style="margin-top:6px">Host: ${escapeHtml(e.hostName)} ${hostVerified?'<span class="pill verified" style="margin-left:6px">host verified</span>':'<span class="pill pending" style="margin-left:6px">host not verified</span>'}</div>
+      <div class="code" style="margin-top:6px">${t('host_label',{name:escapeHtml(e.hostName)})} ${hostVerified?'<span class="pill verified" style="margin-left:6px">'+t('host_verified_pill')+'</span>':'<span class="pill pending" style="margin-left:6px">'+t('host_notverified_pill')+'</span>'}</div>
     </div>
     <div class="right"><div class="acts">
-      <button class="btn btn-ok btn-sm" onclick="approveExp('${e.id}')" ${hostVerified?'':'disabled title="Verify the host first"'}>Approve</button>
-      <button class="btn btn-danger btn-sm" onclick="rejectExp('${e.id}')">Reject</button>
+      <button class="btn btn-ok btn-sm" onclick="approveExp('${e.id}')" ${hostVerified?'':'disabled title="'+t('verifyhost_first')+'"'}>${t('approve')}</button>
+      <button class="btn btn-danger btn-sm" onclick="rejectExp('${e.id}')">${t('reject')}</button>
     </div></div>
   </div>`;
 }
 function approveExp(id){
   const host=(()=>{ const e=expById(id); return e?DB.users().find(u=>u.id===e.hostId):null; })();
-  if(!host||!host.host||host.host.status!=='verified'){ toast('Verify the host before publishing','err'); return; }
+  if(!host||!host.host||host.host.status!=='verified'){ toast(t('verify_before_toast'),'err'); return; }
   const exps=DB.experiences(); const i=exps.findIndex(e=>e.id===id);
   exps[i].status='live'; if(exps[i].reviews===0){ exps[i].rating=(4.7+Math.random()*0.3).toFixed(2); }
-  DB.saveExperiences(exps); toast('Listing is live'); router();
+  DB.saveExperiences(exps); toast(t('listing_live_toast')); router();
 }
 function rejectExp(id){
   const exps=DB.experiences(); const i=exps.findIndex(e=>e.id===id);
-  exps[i].status='rejected'; DB.saveExperiences(exps); toast('Listing rejected','err'); router();
+  exps[i].status='rejected'; DB.saveExperiences(exps); toast(t('listing_rejected_toast'),'err'); router();
 }
 function adminBookingRow(b){
   const e=expById(b.expId); const c=e?catOf(e.category):CATS[0];
   return '<div class="lcard"><div class="thumb '+c.g+'" '+(e?'data-photo="'+e.img+'"':'')+'></div>'
-    +'<div class="main"><div class="t">'+b.expTitle+'</div><div class="s">'+escapeHtml(b.customer.name)+' · '+fmtDate(b.date)+' · '+b.guests+' guests · '+b.codeStr+'</div></div>'
-    +'<div class="right"><div class="money">'+money(b.subtotal)+'</div><div class="code" style="color:var(--ocean)">+'+money(b.commission)+' fee</div></div></div>';
+    +'<div class="main"><div class="t">'+b.expTitle+'</div><div class="s">'+escapeHtml(b.customer.name)+' · '+fmtDate(b.date)+' · '+b.guests+' '+guestWord(b.guests)+' · '+b.codeStr+'</div></div>'
+    +'<div class="right"><div class="money">'+money(b.subtotal)+'</div><div class="code" style="color:var(--ocean)">+'+money(b.commission)+' '+t('platform_fee')+'</div></div></div>';
 }
 
 /* ============================ 404 ============================ */
 function view404(){
-  return '<section class="dash"><div class="wrap"><div class="empty"><div class="big">🧭</div><h2 class="h-md">Page not found</h2><p style="margin-top:8px">That link does not lead anywhere.</p><a href="#/" class="btn btn-primary" style="margin-top:18px">Back home</a></div></div></section>';
+  return '<section class="dash"><div class="wrap"><div class="empty"><div class="big">🧭</div><h2 class="h-md">'+t('nf_title')+'</h2><p style="margin-top:8px">'+t('nf_p')+'</p><a href="#/" class="btn btn-primary" style="margin-top:18px">'+t('back_home')+'</a></div></div></section>';
 }
 
 /* ============================ BIND AFTER RENDER ============================ */
@@ -1486,9 +2006,9 @@ function mountWizNav(){
   let nav=document.getElementById('wizNavRow');
   if(nav) nav.remove();
   nav=document.createElement('div'); nav.id='wizNavRow'; nav.className='wiz-nav';
-  const back = wizStep>1 ? '<button class="btn btn-line btn-lg" id="wizBackBtn">← Back</button>' : '<span></span>';
-  const next = wizStep<5 ? '<button class="btn btn-primary btn-lg" id="wizNextBtn">Continue →</button>'
-    : '<button class="btn btn-dark btn-lg" id="wizSubmitBtn">Submit application</button>';
+  const back = wizStep>1 ? '<button class="btn btn-line btn-lg" id="wizBackBtn">'+t('back_btn')+'</button>' : '<span></span>';
+  const next = wizStep<5 ? '<button class="btn btn-primary btn-lg" id="wizNextBtn">'+t('continue_btn')+'</button>'
+    : '<button class="btn btn-dark btn-lg" id="wizSubmitBtn">'+t('submit_app_btn')+'</button>';
   nav.innerHTML=back+next;
   wrap.appendChild(nav);
   const b=document.getElementById('wizBackBtn'); if(b) b.onclick=wizBack;
@@ -1498,6 +2018,7 @@ function mountWizNav(){
 
 /* ============================ BOOT ============================ */
 seed();
+document.documentElement.lang=CURRENT_LANG;
 if(!location.hash) location.hash='#/';
 router();
 </script>

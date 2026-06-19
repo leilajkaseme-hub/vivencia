@@ -320,6 +320,9 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
 .auth-tabs button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
 .demo-hint{margin-top:18px;font-size:12.5px;color:var(--muted);background:var(--surface);border-radius:11px;padding:13px 15px;line-height:1.6}
 .demo-hint b{color:var(--ink)}
+.auth-alt{margin-top:20px;padding-top:18px;border-top:1px solid var(--line);text-align:center;font-size:13.5px;color:var(--muted)}
+.auth-alt a{display:inline-block;margin-top:5px;color:var(--ocean);font-weight:600}
+.auth-alt a:hover{text-decoration:underline}
 
 /* dashboard + admin shared */
 .dash{padding:36px 0 80px}
@@ -533,6 +536,7 @@ en:{
   auth_signin:`Sign in`, auth_signup:`Sign up`, auth_fullname:`Full name`, auth_name_ph:`Your name`, auth_email:`Email`,
   auth_password:`Password`, auth_signin_btn:`Sign in`, auth_create_btn:`Create account`, demo_logins:`Demo logins`,
   demo_traveler:`Traveler`, demo_host:`Host`, demo_admin:`Admin`,
+  auth_host_q:`Want to share your own experiences?`, auth_host_cta:`Sign up as a host →`,
   auth_fill_toast:`Fill in email and password`, auth_wrong_toast:`Wrong email or password`, auth_signedin_toast:`Signed in as {name}`,
   auth_addname_toast:`Add your name`, auth_emailexists_toast:`That email already exists`, auth_created_toast:`Account created`, signedout_toast:`Signed out`,
   host_already_t:`You are already a host`, host_already_p:`Manage your listings and bookings from your dashboard.`, host_already_btn:`Go to host dashboard`,
@@ -641,6 +645,7 @@ pt:{
   auth_signin:`Entrar`, auth_signup:`Registar`, auth_fullname:`Nome completo`, auth_name_ph:`O seu nome`, auth_email:`Email`,
   auth_password:`Palavra-passe`, auth_signin_btn:`Entrar`, auth_create_btn:`Criar conta`, demo_logins:`Acessos de demonstração`,
   demo_traveler:`Viajante`, demo_host:`Anfitrião`, demo_admin:`Administrador`,
+  auth_host_q:`Quer partilhar as suas próprias experiências?`, auth_host_cta:`Registe-se como anfitrião →`,
   auth_fill_toast:`Preencha o email e a palavra-passe`, auth_wrong_toast:`Email ou palavra-passe incorretos`, auth_signedin_toast:`Sessão iniciada como {name}`,
   auth_addname_toast:`Indique o seu nome`, auth_emailexists_toast:`Esse email já existe`, auth_created_toast:`Conta criada`, signedout_toast:`Sessão terminada`,
   host_already_t:`Já é anfitrião`, host_already_p:`Faça a gestão dos seus anúncios e reservas no seu painel.`, host_already_btn:`Ir para o painel de anfitrião`,
@@ -749,6 +754,7 @@ fr:{
   auth_signin:`Se connecter`, auth_signup:`S'inscrire`, auth_fullname:`Nom complet`, auth_name_ph:`Votre nom`, auth_email:`Email`,
   auth_password:`Mot de passe`, auth_signin_btn:`Se connecter`, auth_create_btn:`Créer un compte`, demo_logins:`Identifiants de démo`,
   demo_traveler:`Voyageur`, demo_host:`Hôte`, demo_admin:`Admin`,
+  auth_host_q:`Vous voulez partager vos propres expériences ?`, auth_host_cta:`Inscrivez-vous en tant qu'hôte →`,
   auth_fill_toast:`Saisissez l'email et le mot de passe`, auth_wrong_toast:`Email ou mot de passe incorrect`, auth_signedin_toast:`Connecté en tant que {name}`,
   auth_addname_toast:`Ajoutez votre nom`, auth_emailexists_toast:`Cet email existe déjà`, auth_created_toast:`Compte créé`, signedout_toast:`Déconnecté`,
   host_already_t:`Vous êtes déjà hôte`, host_already_p:`Gérez vos annonces et réservations depuis votre tableau de bord.`, host_already_btn:`Aller au tableau de bord hôte`,
@@ -857,6 +863,7 @@ es:{
   auth_signin:`Iniciar sesión`, auth_signup:`Registrarse`, auth_fullname:`Nombre completo`, auth_name_ph:`Tu nombre`, auth_email:`Email`,
   auth_password:`Contraseña`, auth_signin_btn:`Iniciar sesión`, auth_create_btn:`Crear cuenta`, demo_logins:`Accesos de demo`,
   demo_traveler:`Viajero`, demo_host:`Anfitrión`, demo_admin:`Admin`,
+  auth_host_q:`¿Quieres compartir tus propias experiencias?`, auth_host_cta:`Regístrate como anfitrión →`,
   auth_fill_toast:`Rellena el email y la contraseña`, auth_wrong_toast:`Email o contraseña incorrectos`, auth_signedin_toast:`Sesión iniciada como {name}`,
   auth_addname_toast:`Añade tu nombre`, auth_emailexists_toast:`Ese email ya existe`, auth_created_toast:`Cuenta creada`, signedout_toast:`Sesión cerrada`,
   host_already_t:`Ya eres anfitrión`, host_already_p:`Gestiona tus anuncios y reservas desde tu panel.`, host_already_btn:`Ir al panel de anfitrión`,
@@ -1461,6 +1468,10 @@ function viewAuth(){
         <div class="field"><label>${t('auth_email')}</label><input id="auEmail" type="email" placeholder="you@email.com"></div>
         <div class="field"><label>${t('auth_password')}</label><input id="auPass" type="password" placeholder="••••••••"></div>
         <button class="btn btn-primary btn-lg btn-block" id="auGo">${authMode==='login'?t('auth_signin_btn'):t('auth_create_btn')}</button>
+      </div>
+      <div class="auth-alt">
+        <span>${t('auth_host_q')}</span>
+        <a href="#/host">${t('auth_host_cta')}</a>
       </div>
       <div class="demo-hint">
         <b>${t('demo_logins')}</b><br>

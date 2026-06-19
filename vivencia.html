@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vivência · Experiences in Madeira & Portugal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#ffffff;
+  --surface:#f5f5f7;
+  --surface-2:#fafafa;
+  --ink:#1d1d1f;
+  --muted:#6e6e73;
+  --faint:#86868b;
+  --line:#e6e6ea;
+  --line-strong:#d2d2d7;
+  --ocean:#0d7d77;
+  --ocean-deep:#0a5f5a;
+  --ocean-soft:#e7f3f2;
+  --sun:#f0a23c;
+  --sun-soft:#fcefdb;
+  --rose:#c75d6b;
+  --indigo:#5b6cc4;
+  --violet:#8a6bd1;
+  --green:#3f9d6b;
+  --danger:#d8504a;
+  --ok:#2f9e6b;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.04),0 1px 3px rgba(0,0,0,.05);
+  --shadow:0 4px 16px rgba(0,0,0,.06),0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 18px 50px rgba(0,0,0,.12),0 4px 14px rgba(0,0,0,.06);
+  --r:16px;
+  --r-sm:11px;
+  --r-lg:22px;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  color:var(--ink);
+  background:var(--canvas);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.5;
+  letter-spacing:-.011em;
+}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
+img{display:block;max-width:100%}
+.mono{font-family:'JetBrains Mono',monospace;font-feature-settings:"tnum"}
+.serif{font-family:'Fraunces',Georgia,serif}
+:focus-visible{outline:2px solid var(--ocean);outline-offset:2px;border-radius:6px}
+
+/* layout */
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+.app-min{min-height:100vh;display:flex;flex-direction:column}
+main{flex:1}
+.sec{padding:84px 0}
+.sec-tight{padding:54px 0}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ocean)}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.02em;line-height:1.08}
+.h-xl{font-size:clamp(40px,6.2vw,72px);line-height:1.02}
+.h-lg{font-size:clamp(30px,4vw,44px)}
+.h-md{font-size:clamp(23px,2.6vw,30px)}
+.lede{font-size:clamp(17px,1.6vw,20px);color:var(--muted);line-height:1.55;font-weight:400}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:80;background:rgba(255,255,255,.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.nav-in{height:60px;display:flex;align-items:center;gap:28px}
+.brand{display:flex;align-items:center;gap:9px;font-family:'Fraunces',serif;font-weight:600;font-size:21px;letter-spacing:-.02em}
+.brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--ocean),var(--ocean-deep));box-shadow:0 0 0 3px var(--ocean-soft)}
+.nav-links{display:flex;gap:4px;margin-left:6px}
+.nav-links a{font-size:14px;font-weight:450;color:var(--muted);padding:8px 12px;border-radius:9px;transition:.18s var(--ease)}
+.nav-links a:hover{color:var(--ink);background:var(--surface)}
+.nav-links a.on{color:var(--ink)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.nav-toggle{display:none}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:550;padding:10px 18px;border-radius:980px;transition:.18s var(--ease);white-space:nowrap}
+.btn-primary{background:var(--ocean);color:#fff}
+.btn-primary:hover{background:var(--ocean-deep);transform:translateY(-1px)}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-dark:hover{background:#000;transform:translateY(-1px)}
+.btn-ghost{background:var(--surface);color:var(--ink)}
+.btn-ghost:hover{background:#ececef}
+.btn-line{border:1px solid var(--line-strong);background:#fff;color:var(--ink)}
+.btn-line:hover{border-color:var(--ink);background:var(--surface-2)}
+.btn-lg{padding:14px 26px;font-size:15px}
+.btn-block{width:100%}
+.btn-sm{padding:7px 13px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-danger{background:#fdecea;color:var(--danger)}
+.btn-danger:hover{background:#fbded9}
+.btn-ok{background:var(--ocean);color:#fff}
+
+/* hero */
+.hero{position:relative;padding:64px 0 40px;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+.hero h1{margin:18px 0 0}
+.hero .lede{margin-top:20px;max-width:30ch}
+.hero-art{position:relative;height:480px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-lg)}
+.hero-art .photo{position:absolute;inset:0;background-size:cover;background-position:center}
+.hero-art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,125,119,.05),rgba(10,95,90,.32))}
+.hero-badge{position:absolute;left:18px;bottom:18px;z-index:2;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-radius:14px;padding:12px 15px;box-shadow:var(--shadow);display:flex;align-items:center;gap:11px}
+.hero-badge .av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--sun),var(--rose));display:grid;place-items:center;color:#fff;font-weight:600;font-size:14px;font-family:'Fraunces',serif}
+.hero-badge b{font-size:13px}
+.hero-badge span{font-size:12px;color:var(--muted);display:block}
+
+/* search composer */
+.composer{margin-top:30px;background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:8px;display:flex;gap:6px;align-items:stretch}
+.composer .field{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 14px;border-radius:11px;transition:.16s}
+.composer .field:hover{background:var(--surface)}
+.composer label{font-size:11px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.07em}
+.composer input,.composer select{border:none;background:transparent;font-size:15px;font-weight:500;outline:none;padding:3px 0;width:100%;color:var(--ink)}
+.composer .sep{width:1px;background:var(--line);margin:8px 0}
+.composer .go{align-self:center;width:46px;height:46px;border-radius:12px;background:var(--ocean);color:#fff;display:grid;place-items:center;transition:.18s var(--ease)}
+.composer .go:hover{background:var(--ocean-deep)}
+
+/* trust row */
+.trust{display:flex;gap:28px;margin-top:26px;flex-wrap:wrap}
+.trust .t{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.trust .t b{color:var(--ink);font-weight:600}
+
+/* category chips */
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:980px;border:1px solid var(--line-strong);background:#fff;font-size:13px;font-weight:500;color:var(--ink);transition:.16s var(--ease)}
+.chip:hover{border-color:var(--ink);background:var(--surface-2)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip .ic{width:18px;height:18px;border-radius:6px;display:inline-block}
+
+/* card grid */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;transition:.22s var(--ease);cursor:pointer;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:transparent}
+.card .media{position:relative;aspect-ratio:4/3;overflow:hidden}
+.card .media .photo{position:absolute;inset:0;background-size:cover;background-position:center;transition:.5s var(--ease)}
+.card:hover .media .photo{transform:scale(1.05)}
+.card .tag{position:absolute;top:12px;left:12px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);font-size:11px;font-weight:600;padding:5px 11px;border-radius:980px;color:var(--ink);letter-spacing:.01em}
+.card .like{position:absolute;top:11px;right:11px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.85);display:grid;place-items:center;font-size:15px;color:var(--muted)}
+.card .body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:7px;flex:1}
+.card .loc{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.card .ttl{font-family:'Fraunces',serif;font-size:18px;font-weight:600;line-height:1.18;letter-spacing:-.01em}
+.card .meta{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--muted);margin-top:2px}
+.card .rate{display:flex;align-items:center;gap:4px;color:var(--ink);font-weight:600}
+.card .rate .s{color:var(--sun)}
+.card .foot{margin-top:auto;padding-top:10px;display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid var(--line)}
+.card .price{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:16px}
+.card .price small{font-family:'Inter';font-weight:450;color:var(--muted);font-size:12px}
+
+/* gradient placeholders by category */
+.g-ocean{background:linear-gradient(135deg,#13a59c,#0a5f5a)}
+.g-nature{background:linear-gradient(135deg,#4cb37e,#0d6f55)}
+.g-food{background:linear-gradient(135deg,#f0a23c,#c75d6b)}
+.g-culture{background:linear-gradient(135deg,#6f7fd6,#8a6bd1)}
+.g-adventure{background:linear-gradient(135deg,#f08a3c,#d8504a)}
+
+/* section head */
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:30px}
+.sec-head .lede{margin-top:10px}
+.link-arrow{font-size:14px;font-weight:550;color:var(--ocean);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.link-arrow:hover{gap:9px}
+
+/* how it works */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.step{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:28px}
+.step .n{font-family:'Fraunces',serif;font-size:14px;font-weight:600;color:var(--ocean);width:34px;height:34px;border-radius:50%;background:var(--ocean-soft);display:grid;place-items:center;margin-bottom:16px}
+.step h3{font-size:19px;margin-bottom:8px}
+.step p{font-size:14.5px;color:var(--muted);line-height:1.55}
+
+/* host band */
+.band{background:linear-gradient(135deg,#0d7d77,#0a5048);border-radius:var(--r-lg);padding:56px;color:#fff;position:relative;overflow:hidden}
+.band::before{content:"";position:absolute;right:-80px;top:-80px;width:320px;height:320px;border-radius:50%;background:rgba(255,255,255,.06)}
+.band::after{content:"";position:absolute;right:60px;bottom:-120px;width:260px;height:260px;border-radius:50%;background:rgba(240,162,60,.14)}
+.band h2{color:#fff;max-width:18ch;position:relative}
+.band p{color:rgba(255,255,255,.82);margin-top:14px;max-width:46ch;position:relative;font-size:17px}
+.band .row{display:flex;gap:38px;margin:30px 0;position:relative}
+.band .stat b{font-family:'Fraunces',serif;font-size:30px;display:block}
+.band .stat span{font-size:13px;color:rgba(255,255,255,.7)}
+.band .btn{position:relative}
+
+/* footer */
+.foot{border-top:1px solid var(--line);background:var(--surface-2);padding:54px 0 36px;margin-top:40px}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:32px}
+.foot h4{font-family:'Inter';font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+.foot a{display:block;font-size:14px;color:var(--muted);padding:5px 0}
+.foot a:hover{color:var(--ink)}
+.foot-bottom{margin-top:40px;padding-top:22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:13px;color:var(--faint);flex-wrap:wrap;gap:12px}
+
+/* explore */
+.explore-head{padding:36px 0 8px}
+.filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:18px 0 4px}
+.fbox{display:flex;align-items:center;gap:8px;border:1px solid var(--line-strong);border-radius:11px;background:#fff;padding:9px 13px}
+.fbox label{font-size:11px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
+.fbox select,.fbox input{border:none;outline:none;background:transparent;font-size:14px;font-weight:500;color:var(--ink)}
+.search-line{flex:1;min-width:200px;display:flex;align-items:center;gap:9px;border:1px solid var(--line-strong);border-radius:11px;padding:10px 14px;background:#fff}
+.search-line input{flex:1;border:none;outline:none;font-size:15px}
+.result-meta{display:flex;justify-content:space-between;align-items:center;margin:22px 0 18px;color:var(--muted);font-size:14px}
+.empty{text-align:center;padding:80px 20px;color:var(--muted)}
+.empty .big{font-size:46px;margin-bottom:14px}
+
+/* experience detail */
+.exp-hero{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:10px;height:440px;margin-top:24px;border-radius:var(--r-lg);overflow:hidden}
+.exp-hero .ph{position:relative;overflow:hidden;background-size:cover;background-position:center}
+.exp-hero .ph:first-child{grid-row:span 2}
+.exp-detail{display:grid;grid-template-columns:1fr 380px;gap:48px;margin-top:40px;align-items:start}
+.exp-title{font-size:clamp(28px,3.4vw,40px)}
+.exp-sub{display:flex;align-items:center;gap:16px;color:var(--muted);font-size:14px;margin-top:12px;flex-wrap:wrap}
+.exp-sub .rate{color:var(--ink);font-weight:600;display:flex;gap:5px;align-items:center}
+.exp-sub .rate .s{color:var(--sun)}
+.facts{display:flex;gap:14px;flex-wrap:wrap;margin:26px 0}
+.fact{flex:1;min-width:130px;border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.fact .k{font-size:12px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.fact .v{font-size:16px;font-weight:600;margin-top:5px}
+.divider{height:1px;background:var(--line);margin:32px 0}
+.prose p{color:var(--ink);font-size:15.5px;line-height:1.7;margin-bottom:14px;font-weight:400}
+.prose .muted{color:var(--muted)}
+.inc{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;margin-top:8px}
+.inc li{list-style:none;font-size:14.5px;display:flex;gap:10px;align-items:flex-start;color:var(--ink)}
+.inc li .ck{color:var(--ocean);font-weight:700;flex-shrink:0}
+.host-card{display:flex;gap:16px;align-items:center;border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-top:6px}
+.host-card .av{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--ocean),var(--ocean-deep));display:grid;place-items:center;color:#fff;font-weight:600;font-family:'Fraunces',serif;font-size:20px;flex-shrink:0}
+.host-card .nm{font-weight:600;font-size:16px;display:flex;align-items:center;gap:7px}
+.verified{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--ocean);background:var(--ocean-soft);padding:2px 8px;border-radius:980px}
+.review{border-top:1px solid var(--line);padding:20px 0;display:flex;gap:14px}
+.review .av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:600;font-size:15px;flex-shrink:0;font-family:'Fraunces',serif}
+.review .s{color:var(--sun);font-size:12px}
+
+/* booking widget */
+.booker{position:sticky;top:84px;border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;box-shadow:var(--shadow);background:#fff}
+.booker .pr{display:flex;align-items:baseline;gap:6px;margin-bottom:18px}
+.booker .pr b{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:600}
+.booker .pr span{color:var(--muted);font-size:14px}
+.bk-field{border:1px solid var(--line-strong);border-radius:12px;padding:11px 14px;margin-bottom:10px}
+.bk-field label{font-size:11px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;display:block}
+.bk-field input{border:none;outline:none;font-size:15px;font-weight:500;width:100%;margin-top:3px;background:transparent}
+.stepper{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.stepper b{font-size:16px;font-weight:600}
+.stepper button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line-strong);font-size:17px;color:var(--ink);display:grid;place-items:center;background:#fff}
+.stepper button:hover{border-color:var(--ink)}
+.bk-sum{margin:16px 0;font-size:14px}
+.bk-sum .r{display:flex;justify-content:space-between;padding:6px 0;color:var(--muted)}
+.bk-sum .r.tot{border-top:1px solid var(--line);margin-top:6px;padding-top:12px;color:var(--ink);font-weight:600;font-size:16px}
+.bk-sum .r .mono{color:var(--ink)}
+.bk-note{font-size:12px;color:var(--faint);text-align:center;margin-top:10px}
+
+/* host wizard */
+.wiz{max-width:760px;margin:0 auto;padding:40px 0 80px}
+.wiz-prog{display:flex;gap:8px;margin-bottom:8px}
+.wiz-prog .seg{flex:1;height:4px;border-radius:980px;background:var(--line)}
+.wiz-prog .seg.on{background:var(--ocean)}
+.wiz-step-label{font-size:13px;color:var(--muted);margin-bottom:26px}
+.wiz-step-label b{color:var(--ink)}
+.wcard{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:36px;box-shadow:var(--shadow-sm)}
+.wcard h2{font-size:26px;margin-bottom:6px}
+.wcard .sub{color:var(--muted);font-size:15px;margin-bottom:26px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{margin-bottom:16px}
+.field label{font-size:13px;font-weight:550;display:block;margin-bottom:7px}
+.field .hint{font-size:12px;color:var(--faint);font-weight:400;margin-left:6px}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line-strong);border-radius:11px;padding:12px 14px;font-size:15px;background:#fff;transition:.16s;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--ocean);box-shadow:0 0 0 3px var(--ocean-soft)}
+.field textarea{resize:vertical;min-height:96px;line-height:1.55}
+.field.err input,.field.err textarea,.field.err select{border-color:var(--danger);box-shadow:0 0 0 3px #fbe4e2}
+.field .msg{font-size:12px;color:var(--danger);margin-top:6px;display:none}
+.field.err .msg{display:block}
+.drop{border:1.5px dashed var(--line-strong);border-radius:14px;padding:26px;text-align:center;cursor:pointer;transition:.18s;background:var(--surface-2)}
+.drop:hover{border-color:var(--ocean);background:var(--ocean-soft)}
+.drop .ic{font-size:26px;margin-bottom:8px}
+.drop b{font-size:14px}
+.drop span{font-size:12.5px;color:var(--muted);display:block;margin-top:3px}
+.file-chip{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:11px 14px;margin-top:10px}
+.file-chip .ic{width:36px;height:36px;border-radius:9px;background:var(--ocean-soft);display:grid;place-items:center;color:var(--ocean);font-size:16px;flex-shrink:0}
+.file-chip .nm{font-size:13.5px;font-weight:550;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-chip .sz{font-size:12px;color:var(--faint)}
+.file-chip .x{color:var(--muted);font-size:18px;cursor:pointer}
+.wiz-nav{display:flex;justify-content:space-between;margin-top:28px}
+.doc-block{margin-bottom:18px}
+.doc-block .dl{font-size:13.5px;font-weight:550;margin-bottom:7px}
+.review-list{display:flex;flex-direction:column;gap:2px}
+.review-list .rl{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+.review-list .rl .k{color:var(--muted)}
+.review-list .rl .v{font-weight:550;text-align:right;max-width:60%}
+.agree{display:flex;gap:11px;align-items:flex-start;background:var(--surface);border-radius:12px;padding:15px;margin-top:18px}
+.agree input{margin-top:3px;width:17px;height:17px;accent-color:var(--ocean)}
+.agree label{font-size:13.5px;color:var(--ink);line-height:1.5}
+
+/* auth */
+.auth-wrap{max-width:420px;margin:0 auto;padding:56px 0 90px}
+.auth-card{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:36px;box-shadow:var(--shadow)}
+.auth-tabs{display:flex;background:var(--surface);border-radius:12px;padding:4px;margin-bottom:26px}
+.auth-tabs button{flex:1;padding:9px;border-radius:9px;font-size:14px;font-weight:550;color:var(--muted);transition:.16s}
+.auth-tabs button.on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
+.demo-hint{margin-top:18px;font-size:12.5px;color:var(--muted);background:var(--surface);border-radius:11px;padding:13px 15px;line-height:1.6}
+.demo-hint b{color:var(--ink)}
+
+/* dashboard + admin shared */
+.dash{padding:36px 0 80px}
+.dash-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:8px}
+.dash-head h1{font-size:32px}
+.dash-head p{color:var(--muted);margin-top:6px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:26px 0 30px;overflow-x:auto}
+.tabs button{padding:12px 16px;font-size:14px;font-weight:550;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;transition:.16s}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--ocean)}
+.tabs button .badge{background:var(--danger);color:#fff;font-size:11px;font-weight:600;border-radius:980px;padding:1px 7px;margin-left:6px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:30px}
+.stat-card{border:1px solid var(--line);border-radius:var(--r);padding:20px;background:#fff}
+.stat-card .k{font-size:12.5px;color:var(--muted);font-weight:500}
+.stat-card .v{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;margin-top:8px}
+.stat-card .v small{font-family:'Inter';font-size:13px;color:var(--muted);font-weight:450}
+.stat-card .sub{font-size:12px;color:var(--ocean);margin-top:5px;font-weight:500}
+.banner{display:flex;align-items:center;gap:14px;border-radius:var(--r);padding:16px 20px;margin-bottom:24px;font-size:14.5px}
+.banner.pending{background:var(--sun-soft);border:1px solid #f3dcb4;color:#8a5a14}
+.banner.ok{background:var(--ocean-soft);border:1px solid #c7e6e3;color:var(--ocean-deep)}
+.banner .ic{font-size:20px}
+.banner b{font-weight:600}
+
+/* list / table cards */
+.lcard{border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:12px;display:flex;align-items:center;gap:18px;background:#fff;transition:.16s}
+.lcard:hover{box-shadow:var(--shadow-sm)}
+.lcard .thumb{width:64px;height:64px;border-radius:12px;background-size:cover;background-position:center;flex-shrink:0}
+.lcard .main{flex:1;min-width:0}
+.lcard .main .t{font-weight:600;font-size:15.5px}
+.lcard .main .s{font-size:13px;color:var(--muted);margin-top:3px}
+.lcard .right{text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.lcard .acts{display:flex;gap:8px}
+.pill{font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:980px;display:inline-flex;align-items:center;gap:5px}
+.pill.live,.pill.verified,.pill.confirmed{background:var(--ocean-soft);color:var(--ocean-deep)}
+.pill.pending{background:var(--sun-soft);color:#9a6212}
+.pill.rejected,.pill.cancelled{background:#fdecea;color:var(--danger)}
+.code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--muted)}
+.money{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:16px}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.42);backdrop-filter:blur(3px);z-index:120;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:.22s}
+.modal-bg.on{opacity:1;pointer-events:auto}
+.modal{background:#fff;border-radius:var(--r-lg);max-width:480px;width:100%;box-shadow:var(--shadow-lg);transform:scale(.96);transition:.22s var(--ease);max-height:90vh;overflow:auto}
+.modal-bg.on .modal{transform:scale(1)}
+.modal-head{padding:24px 26px 0;display:flex;justify-content:space-between;align-items:flex-start}
+.modal-head h3{font-size:22px}
+.modal-head .x{font-size:24px;color:var(--muted);line-height:1;cursor:pointer}
+.modal-body{padding:18px 26px 26px}
+.confirm-mark{width:58px;height:58px;border-radius:50%;background:var(--ocean-soft);color:var(--ocean);display:grid;place-items:center;font-size:28px;margin:6px auto 16px}
+.ticket{background:var(--surface);border:1px dashed var(--line-strong);border-radius:14px;padding:18px;margin:16px 0}
+.ticket .r{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}
+.ticket .r .k{color:var(--muted)}
+.ticket .r .v{font-weight:600}
+
+/* toast */
+.toast-host{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:10px;align-items:center}
+.toast{background:var(--ink);color:#fff;padding:12px 20px;border-radius:980px;font-size:14px;font-weight:500;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:9px;animation:tin .3s var(--ease)}
+.toast.err{background:var(--danger)}
+.toast .ic{font-size:16px}
+@keyframes tin{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* misc */
+.section-title-row{margin-bottom:14px}
+.muted-line{color:var(--muted);font-size:14.5px}
+.center-narrow{max-width:680px;margin:0 auto;text-align:center}
+.reveal{opacity:0;transform:translateY(16px);transition:.6s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+@media (max-width:980px){
+  .hero-grid{grid-template-columns:1fr}
+  .hero-art{height:340px;order:-1}
+  .exp-detail{grid-template-columns:1fr}
+  .booker{position:static}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .foot-grid{grid-template-columns:1fr 1fr}
+  .stat-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:720px){
+  .nav-links{display:none}
+  .nav-toggle{display:grid}
+  .sec{padding:56px 0}
+  .composer{flex-wrap:wrap}
+  .composer .sep{display:none}
+  .composer .field{flex-basis:46%}
+  .grid,.grid-2,.steps{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .exp-hero{grid-template-columns:1fr;grid-template-rows:none;height:auto}
+  .exp-hero .ph{height:200px}
+  .exp-hero .ph:first-child{grid-row:auto;height:280px}
+  .inc{grid-template-columns:1fr}
+  .band{padding:34px}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .wcard{padding:24px}
+  .foot-grid{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important;scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<div class="app-min">
+  <nav class="nav">
+    <div class="wrap nav-in">
+      <a href="#/" class="brand"><span class="dot"></span>Vivência</a>
+      <div class="nav-links" id="navLinks"></div>
+      <div class="nav-right" id="navRight"></div>
+      <button class="nav-toggle btn-ghost btn-sm" onclick="location.hash='#/explore'">Explore</button>
+    </div>
+  </nav>
+  <main id="app"></main>
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <div class="brand" style="font-size:20px"><span class="dot"></span>Vivência</div>
+          <p class="muted-line" style="margin-top:14px;max-width:34ch">Local experiences across Madeira and mainland Portugal, hosted by verified people who actually live there.</p>
+        </div>
+        <div>
+          <h4>Travel</h4>
+          <a href="#/explore">Explore experiences</a>
+          <a href="#/explore">Madeira</a>
+          <a href="#/explore">Lisbon</a>
+          <a href="#/explore">Porto</a>
+        </div>
+        <div>
+          <h4>Hosting</h4>
+          <a href="#/host">Become a host</a>
+          <a href="#/dashboard">Host dashboard</a>
+          <a href="#/host">How payouts work</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="#/">About</a>
+          <a href="#/">Trust and safety</a>
+          <a href="#/auth">Sign in</a>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <span>© 2026 Vivência. A demo marketplace.</span>
+        <span>Funchal · Lisboa · Porto · Made for the Atlantic</span>
+      </div>
+    </div>
+  </footer>
+</div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="toast-host" id="toastHost"></div>
+
+<script>
+"use strict";
+/* ============================ STORE ============================ */
+const DB = {
+  r(k, d){ try{ const v=localStorage.getItem('viv_'+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
+  w(k, v){ try{ localStorage.setItem('viv_'+k, JSON.stringify(v)); }catch(e){ toast('Storage full, clear some data','err'); } },
+  users(){ return this.r('users',[]); },
+  experiences(){ return this.r('experiences',[]); },
+  bookings(){ return this.r('bookings',[]); },
+  saveUsers(u){ this.w('users',u); },
+  saveExperiences(e){ this.w('experiences',e); },
+  saveBookings(b){ this.w('bookings',b); },
+  session(){ return this.r('session',null); },
+  setSession(id){ this.w('session',id); },
+};
+const uid = ()=> (crypto.randomUUID? crypto.randomUUID() : 'id'+Math.random().toString(36).slice(2)+Date.now());
+const code = ()=>{ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s='VIV'; for(let i=0;i<6;i++) s+=c[Math.floor(Math.random()*c.length)]; return s; };
+const money = n => '€'+Number(n).toLocaleString('en-IE',{minimumFractionDigits:0,maximumFractionDigits:0});
+const money2 = n => '€'+Number(n).toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2});
+const COMMISSION = 0.15;
+
+/* ============================ SEED ============================ */
+const CATS = [
+  {id:'ocean', label:'Boat & Ocean', g:'g-ocean', ic:'⛵'},
+  {id:'nature', label:'Hiking & Nature', g:'g-nature', ic:'🥾'},
+  {id:'food', label:'Food & Wine', g:'g-food', ic:'🍷'},
+  {id:'culture', label:'Culture & City', g:'g-culture', ic:'🏛️'},
+  {id:'adventure', label:'Adventure', g:'g-adventure', ic:'🪂'},
+];
+const REGIONS = ['Madeira','Lisbon','Porto','Algarve','Sintra','Azores'];
+const catOf = id => CATS.find(c=>c.id===id) || CATS[0];
+const IMG = id => 'https://images.unsplash.com/photo-'+id+'?auto=format&fit=crop&w=1000&q=70';
+
+function seed(){
+  if(DB.r('seeded',false)) return;
+  const adminId=uid(), h1=uid(), h2=uid(), h3=uid(), trav=uid();
+  const users=[
+    {id:adminId, name:'Admin', email:'admin@vivencia.pt', pass:'admin', role:'admin', createdAt:Date.now()},
+    {id:trav, name:'Mara Lopes', email:'mara@traveler.pt', pass:'demo', role:'traveler', createdAt:Date.now()},
+    {id:h1, name:'Tiago Andrade', email:'tiago@chifbay.pt', pass:'demo', role:'host', createdAt:Date.now()-9e8,
+      host:{status:'verified', business:'Chifbay Charters', nif:'PT512334221', phone:'+351 291 000 111', base:'Funchal, Madeira', about:'Skipper born in Câmara de Lobos, ten years running private charters off the south coast.', languages:'Portuguese, English, French', category:'ocean', years:'10', docs:[{name:'skipper_license.pdf',type:'application/pdf',size:284014},{name:'maritime_insurance.pdf',type:'application/pdf',size:198220},{name:'id_card.jpg',type:'image/jpeg',size:142003}], submittedAt:Date.now()-9e8}},
+    {id:h2, name:'Inês Carvalho', email:'ines@levada.pt', pass:'demo', role:'host', createdAt:Date.now()-7e8,
+      host:{status:'verified', business:'Laurissilva Walks', nif:'PT509887112', phone:'+351 291 222 333', base:'Santana, Madeira', about:'Mountain guide specialised in the levada network and the laurel forest.', languages:'Portuguese, English, German', category:'nature', years:'7', docs:[{name:'guide_certification.pdf',type:'application/pdf',size:221140},{name:'liability_cover.pdf',type:'application/pdf',size:176330}], submittedAt:Date.now()-7e8}},
+    {id:h3, name:'Rui Bettencourt', email:'rui@porto.pt', pass:'demo', role:'host', createdAt:Date.now()-5e8,
+      host:{status:'verified', business:'Douro & Cellar', nif:'PT502110934', phone:'+351 222 444 555', base:'Porto', about:'Wine educator running cellar tastings along the Douro since 2015.', languages:'Portuguese, English, Spanish', category:'food', years:'9', docs:[{name:'business_license.pdf',type:'application/pdf',size:201330}], submittedAt:Date.now()-5e8}},
+  ];
+  const ex = (hostId,hostName,o)=>Object.assign({id:uid(),hostId,hostName,status:'live',rating:(4.6+Math.random()*0.4).toFixed(2),reviews:Math.floor(40+Math.random()*220),createdAt:Date.now()-Math.random()*4e8,gallery:[]},o);
+  const experiences=[
+    ex(h1,'Tiago Andrade',{title:'Private Sunset Yacht Cruise', category:'ocean', region:'Madeira', location:'Funchal Marina', price:95, durationHrs:3, groupMax:8, img:IMG('1544551763-46a013bb70d5'),
+      summary:'Sail the south coast at golden hour with welcome drinks and a swim stop in a hidden bay.',
+      desc:['Step aboard a private sailing yacht as the light turns over the Atlantic. We leave Funchal Marina, hug the cliffs toward Câmara de Lobos and drop anchor in a calm bay where you can swim straight off the deck.','Madeira poncha and local snacks are served as the sun sets behind the headland. This is a small group sailing, never more than eight guests, so it feels like your own boat for the evening.'],
+      inc:['Skipper and crew','Welcome poncha and snacks','Snorkel gear','Towels on board','Hotel pickup in central Funchal'],
+      gallery:[IMG('1502933691298-84fc14542831'),IMG('1507525428034-b723cf961d3e')]}),
+    ex(h2,'Inês Carvalho',{title:'Levada das 25 Fontes Guided Walk', category:'nature', region:'Madeira', location:'Rabaçal', price:48, durationHrs:5, groupMax:10, img:IMG('1502082553048-f009c37129b9'),
+      summary:'Walk the laurel forest to a waterfall amphitheatre fed by twenty five springs.',
+      desc:['One of the most beautiful trails on the island. We follow a centuries old water channel through dense laurissilva, a forest so rare it carries UNESCO protection.','The path opens onto a natural amphitheatre where dozens of springs pour down the rock face. Your guide reads the landscape for you, the endemic plants, the birds, the way the water shaped the island.'],
+      inc:['Certified mountain guide','Transfer to and from the trailhead','Walking poles','Light snack and water','Group photos'],
+      gallery:[IMG('1441974231531-c6227db76b6e'),IMG('1469474968028-56623f02e42e')]}),
+    ex(h3,'Rui Bettencourt',{title:'Douro Cellar Tasting & Vineyard', category:'food', region:'Porto', location:'Vila Nova de Gaia', price:65, durationHrs:2.5, groupMax:12, img:IMG('1510812431401-41d2bd2722f3'),
+      summary:'Six pours across a historic cellar with a guide who actually makes the wine.',
+      desc:['Cross the river to the cellars of Gaia where port has aged for centuries. We taste six expressions, from crisp white port to a deep aged tawny, each one explained without the usual jargon.','You will learn how the Douro terraces, the grape blends and the cask ageing build the flavour. Cheese and cured meats are paired throughout.'],
+      inc:['Six wine tasting','Local cheese and charcuterie board','Cellar tour','Expert sommelier host'],
+      gallery:[IMG('1506377247377-2a5b3b417ebb'),IMG('1474722883778-792e7990302f')]}),
+    ex(h1,'Tiago Andrade',{title:'Dolphin & Whale Watching by Catamaran', category:'ocean', region:'Madeira', location:'Calheta', price:58, durationHrs:3, groupMax:14, img:IMG('1568430462989-44163eb1752f'),
+      summary:'Head into deep water with a marine biologist to find resident dolphins and whales.',
+      desc:['Madeira sits on a migration corridor, which means resident pods of dolphins and seasonal whales. We sail from Calheta with a marine biologist on board who tracks them responsibly.','You keep a respectful distance, the engines go quiet, and you watch them move through clear blue water. Sightings are common all year.'],
+      inc:['Marine biologist guide','Catamaran with sun deck','Drinks on board','Sighting briefing'],
+      gallery:[IMG('1497436072909-60f360e1d4b1')]}),
+    ex(h3,'Rui Bettencourt',{title:'Lisbon Old Town Food Crawl', category:'food', region:'Lisbon', location:'Alfama', price:54, durationHrs:3.5, groupMax:10, img:IMG('1555881400-74d7acaacd8b'),
+      summary:'Eight tastings through Alfama, from bifana to pastéis to a closing ginjinha.',
+      desc:['We wind through the oldest quarter of Lisbon, stopping at the places locals actually queue for. Bifana, fresh seafood, a proper pastel de nata straight from the oven.','Between bites you get the history of the neighbourhood, the fado, the tiles, the trams. We finish with a ginjinha in a hole in the wall bar.'],
+      inc:['Eight food and drink tastings','Local guide','All gratuities','Small group'],
+      gallery:[IMG('1513735492246-483525079686')]}),
+    ex(h2,'Inês Carvalho',{title:'Pico do Arieiro Sunrise Hike', category:'adventure', region:'Madeira', location:'Pico do Arieiro', price:72, durationHrs:6, groupMax:8, img:IMG('1464822759023-fed622ff2c3b'),
+      summary:'Start before dawn on the third highest peak and walk the ridge above the clouds.',
+      desc:['We meet in the dark and drive to the summit for first light. From 1818 metres you stand above a sea of cloud as the sun breaks over the eastern ridge.','From there we take the stairway ridge toward Pico Ruivo, one of the great alpine walks in Europe. Steep in places, fully guided, unforgettable.'],
+      inc:['Pre dawn pickup','Mountain guide','Headlamp and poles','Breakfast at the summit','Safety equipment'],
+      gallery:[IMG('1454496522488-7a8e488e8606')]}),
+    ex(h3,'Rui Bettencourt',{title:'Sintra Palaces Private Day', category:'culture', region:'Sintra', location:'Sintra', price:120, durationHrs:7, groupMax:6, img:IMG('1558102822-da570eb11306'),
+      summary:'Skip the lines at Pena Palace and the Moorish castle with a private historian.',
+      desc:['Sintra is a romantic landscape of palaces hidden in misty hills. With priority entry we explore the candy coloured Pena Palace, the ramparts of the Moorish castle and the initiation wells of Quinta da Regaleira.','A private historian brings the place alive, the kings, the masons, the myths, without you ever waiting in a queue.'],
+      inc:['Private historian guide','Priority palace entry','Air conditioned transport from Lisbon','Bottled water'],
+      gallery:[IMG('1597212618440-806262de4f6b')]}),
+    ex(h1,'Tiago Andrade',{title:'Coastal Kayak & Sea Cave Tour', category:'adventure', region:'Madeira', location:'Garajau', price:42, durationHrs:2, groupMax:8, img:IMG('1502680390469-be75c86b636f'),
+      summary:'Paddle into volcanic sea caves inside a protected marine reserve.',
+      desc:['Launch from the Garajau reserve and paddle along black volcanic cliffs into hidden sea caves. The water here is protected, so the marine life is rich and the visibility is excellent.','No experience needed, full briefing included, and a snorkel stop over the reef before you head back.'],
+      inc:['Kayak and full gear','Guide and safety brief','Snorkel stop','Waterproof bag'],
+      gallery:[IMG('1544551763-46a013bb70d5')]}),
+  ];
+  const bk=[
+    {id:uid(), codeStr:code(), expId:experiences[0].id, expTitle:experiences[0].title, hostId:h1, userId:trav, customer:{name:'Mara Lopes',email:'mara@traveler.pt'}, date:'2026-07-04', guests:2, subtotal:190, commission:28.5, payout:161.5, status:'confirmed', createdAt:Date.now()-2e8},
+    {id:uid(), codeStr:code(), expId:experiences[2].id, expTitle:experiences[2].title, hostId:h3, userId:null, customer:{name:'Lukas Berg',email:'lukas@example.de'}, date:'2026-06-30', guests:4, subtotal:260, commission:39, payout:221, status:'confirmed', createdAt:Date.now()-1e8},
+  ];
+  DB.saveUsers(users); DB.saveExperiences(experiences); DB.saveBookings(bk);
+  DB.w('seeded',true);
+}
+
+/* ============================ HELPERS ============================ */
+const me = ()=>{ const id=DB.session(); return id? DB.users().find(u=>u.id===id)||null : null; };
+const expById = id => DB.experiences().find(e=>e.id===id);
+const stars = r => { const n=Math.round(r); return '★★★★★'.slice(0,n)+'☆☆☆☆☆'.slice(0,5-n); };
+const initials = n => n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const fmtDate = s => { try{ return new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }catch(e){ return s; } };
+const avColor = ['#0d7d77','#5b6cc4','#c75d6b','#f0a23c','#3f9d6b','#8a6bd1'];
+const avFor = n => avColor[(n.charCodeAt(0)+ (n.charCodeAt(1)||0))%avColor.length];
+
+function toast(msg, type){
+  const host=document.getElementById('toastHost');
+  const t=document.createElement('div');
+  t.className='toast'+(type==='err'?' err':'');
+  t.innerHTML='<span class="ic">'+(type==='err'?'⚠':'✓')+'</span>'+msg;
+  host.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(8px)'; setTimeout(()=>t.remove(),250); },2600);
+}
+function openModal(html){
+  document.getElementById('modal').innerHTML=html;
+  document.getElementById('modalBg').classList.add('on');
+}
+function closeModal(){ document.getElementById('modalBg').classList.remove('on'); }
+document.getElementById('modalBg').addEventListener('click',e=>{ if(e.target.id==='modalBg') closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+function photo(url, gradClass){
+  return '<div class="photo '+gradClass+'" data-src="'+(url||'')+'"></div>';
+}
+function hydratePhotos(scope){
+  (scope||document).querySelectorAll('.photo[data-src]').forEach(el=>{
+    const src=el.getAttribute('data-src'); el.removeAttribute('data-src');
+    if(!src) return;
+    const im=new Image();
+    im.onload=()=>{ el.style.backgroundImage='url('+src+')'; };
+    im.src=src;
+  });
+}
+
+/* ============================ NAV ============================ */
+function renderNav(){
+  const u=me();
+  const hash=location.hash||'#/';
+  const links=[['#/','Home'],['#/explore','Explore'],['#/host','Become a host']];
+  document.getElementById('navLinks').innerHTML=links.map(l=>
+    '<a href="'+l[0]+'" class="'+(hash===l[0]?'on':'')+'">'+l[1]+'</a>').join('');
+  const right=document.getElementById('navRight');
+  if(u){
+    const dash = u.role==='admin' ? '<a href="#/admin" class="btn btn-ghost btn-sm">Admin desk</a>' :
+                 '<a href="#/dashboard" class="btn btn-ghost btn-sm">Dashboard</a>';
+    right.innerHTML = dash + '<button class="btn btn-line btn-sm" onclick="logout()">'+initials(u.name)+' · Sign out</button>';
+  }else{
+    right.innerHTML='<a href="#/auth" class="btn btn-ghost btn-sm">Sign in</a><a href="#/host" class="btn btn-dark btn-sm">Host with us</a>';
+  }
+}
+function logout(){ DB.setSession(null); toast('Signed out'); location.hash='#/'; }
+
+/* ============================ ROUTER ============================ */
+function router(){
+  const app=document.getElementById('app');
+  window.scrollTo(0,0);
+  const raw=(location.hash||'#/').replace(/^#\//,'');
+  const qi=raw.indexOf('?');
+  const path=qi>=0?raw.slice(0,qi):raw;
+  const parts=path.split('/');
+  const root=parts[0]||'';
+  let html='';
+  if(root===''){ html=viewHome(); }
+  else if(root==='explore'){ html=viewExplore(); }
+  else if(root==='experience'){ const e=expById(parts[1]); html=e?viewExperience(e):view404(); }
+  else if(root==='host'){ html=viewHost(); }
+  else if(root==='auth'){ html=viewAuth(); }
+  else if(root==='dashboard'){ html=viewDashboard(); }
+  else if(root==='admin'){ html=viewAdmin(); }
+  else html=view404();
+  app.innerHTML=html;
+  renderNav();
+  hydratePhotos(app);
+  if(typeof afterRender==='function' && afterRender._fn){ afterRender._fn(); afterRender._fn=null; }
+  observeReveal();
+}
+function afterRender(fn){ afterRender._fn=fn; }
+window.addEventListener('hashchange',()=>router());
+
+function observeReveal(){
+  const els=document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){ els.forEach(e=>e.classList.add('in')); return; }
+  const io=new IntersectionObserver((ents)=>{ ents.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target);} }); },{threshold:.12});
+  els.forEach(e=>io.observe(e));
+}
+
+/* ============================ CARD ============================ */
+function expCard(e){
+  const c=catOf(e.category);
+  return '<a class="card reveal" href="#/experience/'+e.id+'">'
+    +'<div class="media">'+photo(e.img,c.g)
+    +'<span class="tag">'+c.ic+' '+c.label+'</span><span class="like">♡</span></div>'
+    +'<div class="body"><div class="loc">◷ '+e.location+', '+e.region+'</div>'
+    +'<div class="ttl">'+e.title+'</div>'
+    +'<div class="meta"><span class="rate"><span class="s">★</span>'+e.rating+'</span><span>'+e.reviews+' reviews</span><span>·</span><span>'+e.durationHrs+'h</span></div>'
+    +'<div class="foot"><span class="muted-line" style="font-size:12.5px">Hosted by '+e.hostName.split(' ')[0]+'</span>'
+    +'<span class="price">'+money(e.price)+' <small>per person</small></span></div></div></a>';
+}
+
+/* ============================ HOME ============================ */
+function viewHome(){
+  const live=DB.experiences().filter(e=>e.status==='live');
+  const featured=live.slice(0,6);
+  return `
+  <section class="hero"><div class="wrap"><div class="hero-grid">
+    <div>
+      <span class="eyebrow">Madeira & Portugal</span>
+      <h1 class="h-xl">Do the thing you<br>flew here for.</h1>
+      <p class="lede">Boat trips, mountain trails, cellar tastings and city walks, run by verified local hosts who know exactly where to take you.</p>
+      <div class="composer" id="homeComposer">
+        <div class="field"><label>Where</label>
+          <select id="hcRegion"><option value="">Anywhere in Portugal</option>${REGIONS.map(r=>'<option>'+r+'</option>').join('')}</select></div>
+        <div class="sep"></div>
+        <div class="field"><label>Experience</label>
+          <select id="hcCat"><option value="">Any kind</option>${CATS.map(c=>'<option value="'+c.id+'">'+c.label+'</option>').join('')}</select></div>
+        <div class="sep"></div>
+        <div class="field"><label>Search</label>
+          <input id="hcQ" placeholder="sunset, levada, wine..." /></div>
+        <button class="go" id="hcGo" aria-label="Search">→</button>
+      </div>
+      <div class="trust">
+        <div class="t">✓ <b>Verified hosts</b> only</div>
+        <div class="t">★ <b>4.8</b> average rating</div>
+        <div class="t">⚡ Free cancellation</div>
+      </div>
+    </div>
+    <div class="hero-art">
+      ${photo(IMG('1505228395891-9a51e7e86bf6'),'g-ocean')}
+      <div class="hero-badge"><div class="av">T</div><div><b>Tiago, Funchal</b><span>Sunset cruise · just booked</span></div></div>
+    </div>
+  </div></div></section>
+
+  <section class="sec-tight"><div class="wrap">
+    <div class="chips" id="homeCats">
+      ${CATS.map(c=>'<a class="chip" href="#/explore?cat='+c.id+'"><span class="ic '+c.g+'"></span>'+c.label+'</a>').join('')}
+    </div>
+  </div></section>
+
+  <section class="sec" style="padding-top:20px"><div class="wrap">
+    <div class="sec-head">
+      <div><span class="eyebrow">Loved right now</span><h2 class="h-lg" style="margin-top:10px">Featured experiences</h2></div>
+      <a class="link-arrow" href="#/explore">See all experiences →</a>
+    </div>
+    <div class="grid">${featured.map(expCard).join('')}</div>
+  </div></section>
+
+  <section class="sec-tight"><div class="wrap">
+    <div class="center-narrow" style="margin-bottom:40px">
+      <span class="eyebrow">Simple by design</span>
+      <h2 class="h-lg" style="margin-top:10px">How Vivência works</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><div class="n">1</div><h3>Find your experience</h3><p>Browse by region or by the kind of day you want. Every listing shows the real host, the group size and an honest price.</p></div>
+      <div class="step reveal"><div class="n">2</div><h3>Book in seconds</h3><p>Reserve as a guest or with an account. Pick your date, confirm your group, done. Free cancellation on most experiences.</p></div>
+      <div class="step reveal"><div class="n">3</div><h3>Meet your host</h3><p>You get a verified local who actually lives the place. They handle the logistics so you just show up and enjoy it.</p></div>
+    </div>
+  </div></section>
+
+  <section class="sec"><div class="wrap"><div class="band reveal">
+    <span class="eyebrow" style="color:rgba(255,255,255,.8)">For local hosts</span>
+    <h2 class="h-lg" style="margin-top:12px">Turn what you know into income.</h2>
+    <p>List your experience in minutes. We verify you within 24 hours, then send you travellers. One flat 15 percent commission, no listing fees, no surprises.</p>
+    <div class="row">
+      <div class="stat"><b>15%</b><span>flat commission</span></div>
+      <div class="stat"><b>24h</b><span>verification</span></div>
+      <div class="stat"><b>€0</b><span>to list</span></div>
+    </div>
+    <a href="#/host" class="btn btn-lg" style="background:#fff;color:var(--ocean-deep)">Start hosting →</a>
+  </div></div></section>`;
+
+}
+afterRender._home=()=>{};
+/* attach home composer after render via global hook */
+const origRouter=router;
+function bindHome(){
+  const go=document.getElementById('hcGo'); if(!go) return;
+  const run=()=>{
+    const r=document.getElementById('hcRegion').value;
+    const c=document.getElementById('hcCat').value;
+    const q=document.getElementById('hcQ').value.trim();
+    const p=new URLSearchParams(); if(r)p.set('region',r); if(c)p.set('cat',c); if(q)p.set('q',q);
+    location.hash='#/explore?'+p.toString();
+  };
+  go.onclick=run;
+  document.getElementById('hcQ').addEventListener('keydown',e=>{ if(e.key==='Enter') run(); });
+}
+
+/* ============================ EXPLORE ============================ */
+function parseQuery(){
+  const h=location.hash; const i=h.indexOf('?');
+  return new URLSearchParams(i>=0? h.slice(i+1):'');
+}
+function viewExplore(){
+  const q=parseQuery();
+  const region=q.get('region')||''; const cat=q.get('cat')||''; const term=(q.get('q')||'').toLowerCase(); const sort=q.get('sort')||'rating';
+  let list=DB.experiences().filter(e=>e.status==='live');
+  if(region) list=list.filter(e=>e.region===region);
+  if(cat) list=list.filter(e=>e.category===cat);
+  if(term) list=list.filter(e=>(e.title+e.summary+e.location+e.region).toLowerCase().includes(term));
+  if(sort==='price-low') list.sort((a,b)=>a.price-b.price);
+  else if(sort==='price-high') list.sort((a,b)=>b.price-a.price);
+  else list.sort((a,b)=>b.rating-a.rating);
+
+  return `
+  <section class="explore-head"><div class="wrap">
+    <span class="eyebrow">Explore</span>
+    <h1 class="h-md" style="margin-top:8px">${region? region : 'Madeira and Portugal'}, your way</h1>
+    <div class="filters">
+      <div class="search-line">🔍<input id="fQ" placeholder="Search experiences, places, hosts" value="${term?escapeHtml(q.get('q')||''):''}"></div>
+      <div class="fbox"><label>Region</label><select id="fRegion"><option value="">All</option>${REGIONS.map(r=>'<option '+(r===region?'selected':'')+'>'+r+'</option>').join('')}</select></div>
+      <div class="fbox"><label>Type</label><select id="fCat"><option value="">All</option>${CATS.map(c=>'<option value="'+c.id+'" '+(c.id===cat?'selected':'')+'>'+c.label+'</option>').join('')}</select></div>
+      <div class="fbox"><label>Sort</label><select id="fSort">
+        <option value="rating" ${sort==='rating'?'selected':''}>Top rated</option>
+        <option value="price-low" ${sort==='price-low'?'selected':''}>Price low to high</option>
+        <option value="price-high" ${sort==='price-high'?'selected':''}>Price high to low</option>
+      </select></div>
+    </div>
+  </div></section>
+  <section style="padding-bottom:90px"><div class="wrap">
+    <div class="result-meta"><span><b style="color:var(--ink)">${list.length}</b> ${list.length===1?'experience':'experiences'} found</span></div>
+    ${list.length? '<div class="grid">'+list.map(expCard).join('')+'</div>'
+      : '<div class="empty"><div class="big">🧭</div><h3 class="h-md">No experiences match yet</h3><p style="margin-top:8px">Try widening your region or clearing the search.</p></div>'}
+  </div></section>`;
+}
+function bindExplore(){
+  const fQ=document.getElementById('fQ'); if(!fQ) return;
+  const apply=()=>{
+    const p=new URLSearchParams();
+    const r=document.getElementById('fRegion').value; const c=document.getElementById('fCat').value;
+    const s=document.getElementById('fSort').value; const t=fQ.value.trim();
+    if(r)p.set('region',r); if(c)p.set('cat',c); if(s)p.set('sort',s); if(t)p.set('q',t);
+    location.hash='#/explore?'+p.toString();
+  };
+  ['fRegion','fCat','fSort'].forEach(id=>document.getElementById(id).addEventListener('change',apply));
+  fQ.addEventListener('keydown',e=>{ if(e.key==='Enter') apply(); });
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* ============================ EXPERIENCE DETAIL ============================ */
+function viewExperience(e){
+  const c=catOf(e.category);
+  const host=DB.users().find(u=>u.id===e.hostId);
+  const gal=[e.img,...(e.gallery||[])].filter(Boolean).slice(0,3);
+  while(gal.length<3) gal.push(e.img);
+  const seedReviews=[
+    {n:'Sofia M.',t:'Honestly the highlight of our whole trip. '+e.hostName.split(' ')[0]+' knew every corner.',r:5},
+    {n:'James W.',t:'Small group, super relaxed, felt completely safe. Would book again instantly.',r:5},
+    {n:'Clara D.',t:'Great value for what you get. Beautiful spots you would never find alone.',r:4},
+  ];
+  return `
+  <section><div class="wrap">
+    <div style="margin-top:24px"><a class="link-arrow" href="#/explore">← Back to explore</a></div>
+    <div class="exp-hero">
+      ${gal.map((g,i)=>'<div class="ph '+c.g+'" data-photo="'+g+'"></div>').join('')}
+    </div>
+    <div class="exp-detail">
+      <div>
+        <span class="eyebrow">${c.ic} ${c.label}</span>
+        <h1 class="exp-title serif" style="margin-top:10px">${e.title}</h1>
+        <div class="exp-sub">
+          <span class="rate"><span class="s">★</span> ${e.rating} <span style="color:var(--muted);font-weight:400">(${e.reviews} reviews)</span></span>
+          <span>◷ ${e.location}, ${e.region}</span>
+        </div>
+        <div class="facts">
+          <div class="fact"><div class="k">Duration</div><div class="v">${e.durationHrs} hours</div></div>
+          <div class="fact"><div class="k">Group size</div><div class="v">Up to ${e.groupMax}</div></div>
+          <div class="fact"><div class="k">Languages</div><div class="v">${host&&host.host?host.host.languages.split(',')[0]:'English'} +</div></div>
+          <div class="fact"><div class="k">Cancellation</div><div class="v">Free 24h</div></div>
+        </div>
+        <div class="divider"></div>
+        <h2 class="h-md">About this experience</h2>
+        <div class="prose" style="margin-top:14px">${e.desc.map(p=>'<p>'+p+'</p>').join('')}</div>
+        <div class="divider"></div>
+        <h2 class="h-md">What is included</h2>
+        <ul class="inc">${e.inc.map(i=>'<li><span class="ck">✓</span>'+i+'</li>').join('')}</ul>
+        <div class="divider"></div>
+        <h2 class="h-md">Your host</h2>
+        <div class="host-card">
+          <div class="av" style="background:linear-gradient(135deg,${avFor(e.hostName)},${avFor(e.hostName)}cc)">${initials(e.hostName)}</div>
+          <div><div class="nm">${e.hostName} <span class="verified">✓ Verified</span></div>
+          <div class="muted-line" style="font-size:13.5px;margin-top:4px">${host&&host.host?host.host.about:'Local host based in '+e.region+'.'}</div></div>
+        </div>
+        <div class="divider"></div>
+        <h2 class="h-md">Reviews</h2>
+        <div style="margin-top:8px">${seedReviews.map(rv=>
+          '<div class="review"><div class="av" style="background:'+avFor(rv.n)+'">'+initials(rv.n)+'</div>'
+          +'<div><div style="font-weight:600;font-size:14.5px">'+rv.n+'</div><div class="s">'+stars(rv.r)+'</div>'
+          +'<p class="muted-line" style="margin-top:6px">'+rv.t+'</p></div></div>').join('')}</div>
+      </div>
+      <aside>
+        <div class="booker">
+          <div class="pr"><b class="mono">${money(e.price)}</b><span>per person</span></div>
+          <div class="bk-field"><label>Date</label><input type="date" id="bkDate" min="${new Date().toISOString().slice(0,10)}"></div>
+          <div class="bk-field"><label>Guests</label>
+            <div class="stepper"><button type="button" id="gMinus">−</button><b id="gCount">2</b><button type="button" id="gPlus">+</button></div>
+          </div>
+          <div class="bk-sum" id="bkSum"></div>
+          <button class="btn btn-primary btn-lg btn-block" id="bookBtn">Book now</button>
+          <div class="bk-note">You will not be charged in this demo</div>
+        </div>
+      </aside>
+    </div>
+  </div></section>`;
+}
+function bindExperience(e){
+  // hydrate hero photos
+  document.querySelectorAll('.ph[data-photo]').forEach(el=>{
+    const src=el.getAttribute('data-photo'); el.removeAttribute('data-photo');
+    const im=new Image(); im.onload=()=>el.style.backgroundImage='url('+src+')'; im.src=src;
+  });
+  let guests=2; const max=e.groupMax;
+  const gc=document.getElementById('gCount');
+  const sum=document.getElementById('bkSum');
+  const render=()=>{
+    gc.textContent=guests;
+    const sub=e.price*guests; const com=sub*COMMISSION;
+    sum.innerHTML='<div class="r"><span>'+money(e.price)+' × '+guests+' guests</span><span class="mono">'+money(sub)+'</span></div>'
+      +'<div class="r"><span>Free cancellation</span><span class="mono">'+money(0)+'</span></div>'
+      +'<div class="r tot"><span>Total</span><span class="mono">'+money(sub)+'</span></div>';
+  };
+  document.getElementById('gPlus').onclick=()=>{ if(guests<max){guests++;render();} else toast('Group max is '+max,'err'); };
+  document.getElementById('gMinus').onclick=()=>{ if(guests>1){guests--;render();} };
+  render();
+  document.getElementById('bookBtn').onclick=()=>{
+    const date=document.getElementById('bkDate').value;
+    if(!date){ toast('Pick a date first','err'); document.getElementById('bkDate').focus(); return; }
+    openBookingFlow(e,date,guests);
+  };
+}
+function openBookingFlow(e,date,guests){
+  const u=me();
+  const sub=e.price*guests, com=+(sub*COMMISSION).toFixed(2), payout=+(sub-com).toFixed(2);
+  const guestForm = (u && u.role!=='admin') ? '' :
+    '<div class="field"><label>Full name</label><input id="bcName" placeholder="Your name" value="'+(u?escapeHtml(u.name):'')+'"></div>'
+    +'<div class="field"><label>Email</label><input id="bcEmail" type="email" placeholder="you@email.com" value="'+(u?escapeHtml(u.email):'')+'"></div>';
+  openModal(`
+    <div class="modal-head"><h3>Confirm your booking</h3><span class="x" onclick="closeModal()">×</span></div>
+    <div class="modal-body">
+      <div class="lcard" style="margin-bottom:18px;cursor:default">
+        <div class="thumb ${catOf(e.category).g}" data-photo="${e.img}"></div>
+        <div class="main"><div class="t">${e.title}</div><div class="s">${fmtDate(date)} · ${guests} ${guests===1?'guest':'guests'}</div></div>
+      </div>
+      ${ (!u) ? '<p class="muted-line" style="margin-bottom:14px">Booking as a guest. <a href="#/auth" onclick="closeModal()" style="color:var(--ocean);font-weight:550">Sign in</a> to track it in your dashboard.</p>'+guestForm : guestForm }
+      <div class="bk-sum">
+        <div class="r"><span>${money(e.price)} × ${guests}</span><span class="mono" style="color:var(--ink)">${money(sub)}</span></div>
+        <div class="r tot"><span>Total to pay</span><span class="mono">${money(sub)}</span></div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" id="confirmBtn">Confirm booking · ${money(sub)}</button>
+    </div>`);
+  document.querySelectorAll('#modal .thumb[data-photo]').forEach(el=>{
+    const src=el.getAttribute('data-photo'); const im=new Image(); im.onload=()=>el.style.backgroundImage='url('+src+')'; im.src=src;
+  });
+  document.getElementById('confirmBtn').onclick=()=>{
+    let name,email;
+    if(u && u.role!=='admin'){ name=u.name; email=u.email; }
+    else{
+      name=document.getElementById('bcName').value.trim();
+      email=document.getElementById('bcEmail').value.trim();
+      if(!name||!/.+@.+\..+/.test(email)){ toast('Add a valid name and email','err'); return; }
+    }
+    const b={id:uid(), codeStr:code(), expId:e.id, expTitle:e.title, hostId:e.hostId, userId:(u&&u.role!=='admin')?u.id:null,
+      customer:{name,email}, date, guests, subtotal:sub, commission:com, payout, status:'confirmed', createdAt:Date.now()};
+    const arr=DB.bookings(); arr.unshift(b); DB.saveBookings(arr);
+    showTicket(b,e);
+  };
+}
+function showTicket(b,e){
+  openModal(`
+    <div class="modal-head"><h3>You are booked</h3><span class="x" onclick="closeModal()">×</span></div>
+    <div class="modal-body" style="text-align:center">
+      <div class="confirm-mark">✓</div>
+      <p class="muted-line">${e.title}</p>
+      <div class="ticket" style="text-align:left">
+        <div class="r"><span class="k">Confirmation</span><span class="v code" style="font-size:14px">${b.codeStr}</span></div>
+        <div class="r"><span class="k">Date</span><span class="v">${fmtDate(b.date)}</span></div>
+        <div class="r"><span class="k">Guests</span><span class="v">${b.guests}</span></div>
+        <div class="r"><span class="k">Total paid</span><span class="v mono">${money(b.subtotal)}</span></div>
+        <div class="r"><span class="k">Host</span><span class="v">${e.hostName}</span></div>
+      </div>
+      <button class="btn btn-dark btn-block" onclick="closeModal();${me()?"location.hash='#/dashboard'":""}">${me()?'View in dashboard':'Done'}</button>
+    </div>`);
+  toast('Booking confirmed · '+b.codeStr);
+}
+
+/* ============================ AUTH ============================ */
+let authMode='login';
+function viewAuth(){
+  return `
+  <section class="auth-wrap"><div class="wrap">
+    <div class="center-narrow" style="margin-bottom:26px">
+      <h1 class="h-md">${authMode==='login'?'Welcome back':'Create your account'}</h1>
+      <p class="muted-line" style="margin-top:8px">Book faster, track your trips, or manage your hosting.</p>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="${authMode==='login'?'on':''}" onclick="setAuth('login')">Sign in</button>
+        <button class="${authMode==='register'?'on':''}" onclick="setAuth('register')">Sign up</button>
+      </div>
+      <div id="authForm">
+        ${authMode==='register'?'<div class="field"><label>Full name</label><input id="auName" placeholder="Mara Lopes"></div>':''}
+        <div class="field"><label>Email</label><input id="auEmail" type="email" placeholder="you@email.com"></div>
+        <div class="field"><label>Password</label><input id="auPass" type="password" placeholder="••••••••"></div>
+        <button class="btn btn-primary btn-lg btn-block" id="auGo">${authMode==='login'?'Sign in':'Create account'}</button>
+      </div>
+      <div class="demo-hint">
+        <b>Demo logins</b><br>
+        Traveler · mara@traveler.pt / demo<br>
+        Host · tiago@chifbay.pt / demo<br>
+        Admin · admin@vivencia.pt / admin
+      </div>
+    </div>
+  </div></section>`;
+}
+function setAuth(m){ authMode=m; router(); }
+function bindAuth(){
+  const go=document.getElementById('auGo'); if(!go) return;
+  go.onclick=()=>{
+    const email=document.getElementById('auEmail').value.trim().toLowerCase();
+    const pass=document.getElementById('auPass').value;
+    if(!email||!pass){ toast('Fill in email and password','err'); return; }
+    const users=DB.users();
+    if(authMode==='login'){
+      const u=users.find(x=>x.email.toLowerCase()===email);
+      if(!u||u.pass!==pass){ toast('Wrong email or password','err'); return; }
+      DB.setSession(u.id); toast('Signed in as '+u.name.split(' ')[0]);
+      location.hash = u.role==='admin'?'#/admin':'#/dashboard';
+    }else{
+      const name=document.getElementById('auName').value.trim();
+      if(!name){ toast('Add your name','err'); return; }
+      if(users.some(x=>x.email.toLowerCase()===email)){ toast('That email already exists','err'); return; }
+      const u={id:uid(),name,email,pass,role:'traveler',createdAt:Date.now()};
+      users.push(u); DB.saveUsers(users); DB.setSession(u.id);
+      toast('Account created'); location.hash='#/dashboard';
+    }
+  };
+  document.getElementById('auPass').addEventListener('keydown',e=>{ if(e.key==='Enter') go.click(); });
+}
+
+/* ============================ HOST WIZARD ============================ */
+let wizStep=1;
+let wizData={ name:'',email:'',pass:'',business:'',nif:'',phone:'',base:'',about:'',languages:'',category:'ocean',years:'',
+  docs:{id:null,license:null,insurance:null},
+  exp:{title:'',category:'ocean',region:'Madeira',location:'',price:'',durationHrs:'',groupMax:'',summary:'',img:''} };
+const WIZ_LABELS=['Your account','About you','Verification documents','Your first experience','Review and submit'];
+
+function viewHost(){
+  const u=me();
+  if(u && u.role==='host'){
+    return `<section class="dash"><div class="wrap"><div class="center-narrow" style="padding:60px 0">
+      <div class="confirm-mark">✓</div>
+      <h1 class="h-md">You are already a host</h1>
+      <p class="muted-line" style="margin-top:10px">Manage your listings and bookings from your dashboard.</p>
+      <a href="#/dashboard" class="btn btn-primary btn-lg" style="margin-top:20px">Go to host dashboard</a>
+    </div></div></section>`;
+  }
+  if(u && u.role==='admin'){
+    return `<section class="dash"><div class="wrap"><div class="center-narrow" style="padding:60px 0">
+      <h1 class="h-md">Signed in as admin</h1><p class="muted-line" style="margin-top:10px">Use a host or traveler account to apply.</p>
+      <a href="#/admin" class="btn btn-primary btn-lg" style="margin-top:20px">Open admin desk</a></div></div></section>`;
+  }
+  if(u){ wizData.name=u.name; wizData.email=u.email; }
+  return `<section class="wiz"><div class="wrap" style="max-width:760px">
+    <div class="center-narrow" style="margin-bottom:30px;text-align:left">
+      <span class="eyebrow">Become a host</span>
+      <h1 class="h-md" style="margin-top:10px">List your experience on Vivência</h1>
+      <p class="muted-line" style="margin-top:8px">Five quick steps. We verify you within 24 hours, then you go live. Flat 15 percent commission, nothing to list.</p>
+    </div>
+    <div class="wiz-prog">${[1,2,3,4,5].map(i=>'<div class="seg '+(i<=wizStep?'on':'')+'"></div>').join('')}</div>
+    <div class="wiz-step-label">Step <b>${wizStep}</b> of 5 · <b>${WIZ_LABELS[wizStep-1]}</b></div>
+    <div class="wcard" id="wizCard">${wizStepHtml()}</div>
+  </div></section>`;
+}
+function wizStepHtml(){
+  const d=wizData; const u=me();
+  if(wizStep===1){
+    return `<h2>Your account</h2><p class="sub">This is how travellers and our team reach you.</p>
+      <div class="form-row">
+        <div class="field" data-k="name"><label>Full name</label><input id="w_name" value="${escapeHtml(d.name)}" placeholder="Tiago Andrade"><div class="msg">Required</div></div>
+        <div class="field" data-k="email"><label>Email</label><input id="w_email" type="email" value="${escapeHtml(d.email)}" placeholder="you@email.com" ${u?'disabled':''}><div class="msg">Valid email needed</div></div>
+      </div>
+      ${u?'':'<div class="field" data-k="pass"><label>Password <span class="hint">you will use this to sign in</span></label><input id="w_pass" type="password" value="'+escapeHtml(d.pass)+'" placeholder="••••••••"><div class="msg">At least 4 characters</div></div>'}
+      <div class="form-row">
+        <div class="field" data-k="business"><label>Business or trading name</label><input id="w_business" value="${escapeHtml(d.business)}" placeholder="Chifbay Charters"><div class="msg">Required</div></div>
+        <div class="field" data-k="nif"><label>Tax number (NIF) <span class="hint">optional</span></label><input id="w_nif" value="${escapeHtml(d.nif)}" placeholder="PT512334221"></div>
+      </div>
+      <div class="form-row">
+        <div class="field" data-k="phone"><label>Phone</label><input id="w_phone" value="${escapeHtml(d.phone)}" placeholder="+351 291 000 111"><div class="msg">Required</div></div>
+        <div class="field" data-k="base"><label>Where are you based</label><input id="w_base" value="${escapeHtml(d.base)}" placeholder="Funchal, Madeira"><div class="msg">Required</div></div>
+      </div>`;
+  }
+  if(wizStep===2){
+    return `<h2>About you</h2><p class="sub">Travellers book people, not just listings. Tell them who they are meeting.</p>
+      <div class="field" data-k="about"><label>Short bio</label><textarea id="w_about" placeholder="Skipper born in Câmara de Lobos, ten years running private charters...">${escapeHtml(d.about)}</textarea><div class="msg">Tell us a little about you</div></div>
+      <div class="form-row">
+        <div class="field" data-k="languages"><label>Languages you host in</label><input id="w_languages" value="${escapeHtml(d.languages)}" placeholder="Portuguese, English, French"><div class="msg">Required</div></div>
+        <div class="field"><label>Years hosting <span class="hint">optional</span></label><input id="w_years" value="${escapeHtml(d.years)}" placeholder="10"></div>
+      </div>
+      <div class="field"><label>Main category</label>
+        <select id="w_category">${CATS.map(c=>'<option value="'+c.id+'" '+(c.id===d.category?'selected':'')+'>'+c.label+'</option>').join('')}</select></div>`;
+  }
+  if(wizStep===3){
+    return `<h2>Verification documents</h2><p class="sub">Our team checks these within 24 hours. Nothing goes live until you are approved.</p>
+      ${docBlock('id','Government ID','Passport or national ID card')}
+      ${docBlock('license','Activity licence','Tour, skipper or local activity licence')}
+      ${docBlock('insurance','Liability insurance','Public liability cover for your activity')}`;
+  }
+  if(wizStep===4){
+    const e=d.exp;
+    return `<h2>Your first experience</h2><p class="sub">You can add more later. This one goes live once both you and the listing are approved.</p>
+      <div class="field" data-k="exp_title"><label>Title</label><input id="w_exp_title" value="${escapeHtml(e.title)}" placeholder="Private Sunset Yacht Cruise"><div class="msg">Required</div></div>
+      <div class="field" data-k="exp_summary"><label>One line summary</label><input id="w_exp_summary" value="${escapeHtml(e.summary)}" placeholder="Sail the south coast at golden hour with a swim stop"><div class="msg">Required</div></div>
+      <div class="form-row">
+        <div class="field"><label>Category</label><select id="w_exp_category">${CATS.map(c=>'<option value="'+c.id+'" '+(c.id===e.category?'selected':'')+'>'+c.label+'</option>').join('')}</select></div>
+        <div class="field"><label>Region</label><select id="w_exp_region">${REGIONS.map(r=>'<option '+(r===e.region?'selected':'')+'>'+r+'</option>').join('')}</select></div>
+      </div>
+      <div class="field" data-k="exp_location"><label>Meeting point</label><input id="w_exp_location" value="${escapeHtml(e.location)}" placeholder="Funchal Marina"><div class="msg">Required</div></div>
+      <div class="form-row">
+        <div class="field" data-k="exp_price"><label>Price per person (€)</label><input id="w_exp_price" type="number" min="1" value="${e.price}" placeholder="95"><div class="msg">Enter a price</div></div>
+        <div class="field" data-k="exp_durationHrs"><label>Duration (hours)</label><input id="w_exp_durationHrs" type="number" min="0.5" step="0.5" value="${e.durationHrs}" placeholder="3"><div class="msg">Enter a duration</div></div>
+      </div>
+      <div class="form-row">
+        <div class="field" data-k="exp_groupMax"><label>Max group size</label><input id="w_exp_groupMax" type="number" min="1" value="${e.groupMax}" placeholder="8"><div class="msg">Enter a group size</div></div>
+        <div class="field"><label>Cover image URL <span class="hint">optional</span></label><input id="w_exp_img" value="${escapeHtml(e.img)}" placeholder="https://..."></div>
+      </div>`;
+  }
+  // step 5 review
+  const e=d.exp; const c=catOf(e.category);
+  const docState=k=> d.docs[k] ? '✓ '+d.docs[k].name : 'Not uploaded';
+  const earn = e.price? money(+e.price*+(e.groupMax||1)) : '—';
+  return `<h2>Review and submit</h2><p class="sub">Check everything, then send it to our team for verification.</p>
+    <div class="review-list">
+      <div class="rl"><span class="k">Host</span><span class="v">${escapeHtml(d.name||'—')}</span></div>
+      <div class="rl"><span class="k">Business</span><span class="v">${escapeHtml(d.business||'—')}</span></div>
+      <div class="rl"><span class="k">Based in</span><span class="v">${escapeHtml(d.base||'—')}</span></div>
+      <div class="rl"><span class="k">Languages</span><span class="v">${escapeHtml(d.languages||'—')}</span></div>
+      <div class="rl"><span class="k">ID document</span><span class="v">${docState('id')}</span></div>
+      <div class="rl"><span class="k">Activity licence</span><span class="v">${docState('license')}</span></div>
+      <div class="rl"><span class="k">Insurance</span><span class="v">${docState('insurance')}</span></div>
+      <div class="rl"><span class="k">First listing</span><span class="v">${escapeHtml(e.title||'—')}</span></div>
+      <div class="rl"><span class="k">Price</span><span class="v">${e.price?money(e.price)+' per person':'—'}</span></div>
+    </div>
+    <div class="banner ok" style="margin-top:20px"><span class="ic">⚡</span><div>A full group on this listing earns you <b>${e.price?money((e.price*(e.groupMax||1))*(1-COMMISSION)):'—'}</b> after our flat 15 percent commission.</div></div>
+    <div class="agree"><input type="checkbox" id="w_agree"><label>I confirm my documents are genuine and I accept the flat 15 percent commission and host terms.</label></div>`;
+}
+function docBlock(key,title,desc){
+  const f=wizData.docs[key];
+  return `<div class="doc-block"><div class="dl">${title}</div>
+    ${ f ? fileChip(key,f) :
+    '<div class="drop" data-doc="'+key+'"><div class="ic">⬆</div><b>Upload document</b><span>'+desc+' · PDF, JPG or PNG</span><input type="file" accept="image/*,application/pdf" data-doc-input="'+key+'" style="display:none"></div>' }
+  </div>`;
+}
+function fileChip(key,f){
+  const isImg=f.type&&f.type.startsWith('image');
+  return '<div class="file-chip"><div class="ic">'+(isImg?'🖼':'📄')+'</div>'
+    +'<div class="nm">'+escapeHtml(f.name)+'</div><div class="sz">'+fmtSize(f.size)+'</div>'
+    +'<span class="x" data-doc-remove="'+key+'">×</span></div>';
+}
+function fmtSize(b){ if(b<1024)return b+' B'; if(b<1048576)return (b/1024).toFixed(0)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
+
+function bindHost(){
+  const card=document.getElementById('wizCard'); if(!card) return;
+  // document upload binding
+  card.querySelectorAll('[data-doc]').forEach(drop=>{
+    const key=drop.getAttribute('data-doc');
+    const input=drop.querySelector('[data-doc-input]');
+    if(!input) return;
+    drop.addEventListener('click',()=>input.click());
+    input.addEventListener('change',()=>{
+      const f=input.files[0]; if(!f) return;
+      const rec={name:f.name,type:f.type,size:f.size};
+      // store small images as preview only
+      wizData.docs[key]=rec;
+      rerenderWiz();
+      toast('Uploaded '+f.name);
+    });
+  });
+  card.querySelectorAll('[data-doc-remove]').forEach(x=>{
+    x.addEventListener('click',()=>{ wizData.docs[x.getAttribute('data-doc-remove')]=null; rerenderWiz(); });
+  });
+}
+function rerenderWiz(){
+  const card=document.getElementById('wizCard');
+  if(card){ card.innerHTML=wizStepHtml(); bindHost(); }
+}
+function collectWiz(){
+  const g=id=>{ const el=document.getElementById(id); return el?el.value.trim():''; };
+  if(wizStep===1){
+    wizData.name=g('w_name')||wizData.name; wizData.email=g('w_email')||wizData.email;
+    if(document.getElementById('w_pass')) wizData.pass=document.getElementById('w_pass').value;
+    wizData.business=g('w_business'); wizData.nif=g('w_nif'); wizData.phone=g('w_phone'); wizData.base=g('w_base');
+  } else if(wizStep===2){
+    wizData.about=g('w_about'); wizData.languages=g('w_languages'); wizData.years=g('w_years'); wizData.category=g('w_category');
+  } else if(wizStep===4){
+    const e=wizData.exp;
+    e.title=g('w_exp_title'); e.summary=g('w_exp_summary'); e.category=g('w_exp_category'); e.region=g('w_exp_region');
+    e.location=g('w_exp_location'); e.price=g('w_exp_price'); e.durationHrs=g('w_exp_durationHrs'); e.groupMax=g('w_exp_groupMax'); e.img=g('w_exp_img');
+  }
+}
+function validateWiz(){
+  collectWiz();
+  let ok=true; const fail=k=>{ const f=document.querySelector('[data-k="'+k+'"]'); if(f){f.classList.add('err'); if(ok){f.querySelector('input,textarea,select')?.focus();}} ok=false; };
+  document.querySelectorAll('.field.err').forEach(f=>f.classList.remove('err'));
+  const u=me();
+  if(wizStep===1){
+    if(!wizData.name) fail('name');
+    if(!u && !/.+@.+\..+/.test(wizData.email)) fail('email');
+    if(!u && (!wizData.pass||wizData.pass.length<4)) fail('pass');
+    if(!wizData.business) fail('business');
+    if(!wizData.phone) fail('phone');
+    if(!wizData.base) fail('base');
+  } else if(wizStep===2){
+    if(!wizData.about) fail('about');
+    if(!wizData.languages) fail('languages');
+  } else if(wizStep===3){
+    if(!wizData.docs.id||!wizData.docs.license||!wizData.docs.insurance){ toast('Upload all three documents to continue','err'); ok=false; }
+  } else if(wizStep===4){
+    const e=wizData.exp;
+    if(!e.title) fail('exp_title'); if(!e.summary) fail('exp_summary'); if(!e.location) fail('exp_location');
+    if(!e.price||+e.price<=0) fail('exp_price'); if(!e.durationHrs||+e.durationHrs<=0) fail('exp_durationHrs');
+    if(!e.groupMax||+e.groupMax<=0) fail('exp_groupMax');
+  }
+  return ok;
+}
+function wizNext(){ if(!validateWiz()) return; if(wizStep<5){ wizStep++; router(); } }
+function wizBack(){ collectWiz(); if(wizStep>1){ wizStep--; router(); } }
+function wizSubmit(){
+  if(!document.getElementById('w_agree').checked){ toast('Please accept the terms to submit','err'); return; }
+  const u=me();
+  const users=DB.users();
+  let host=u;
+  if(u){
+    // upgrade existing user to host
+    const idx=users.findIndex(x=>x.id===u.id);
+    users[idx].role='host';
+    users[idx].host=buildHostProfile();
+    host=users[idx];
+  }else{
+    if(users.some(x=>x.email.toLowerCase()===wizData.email.toLowerCase())){ toast('That email already has an account, sign in first','err'); return; }
+    host={id:uid(),name:wizData.name,email:wizData.email,pass:wizData.pass,role:'host',createdAt:Date.now(),host:buildHostProfile()};
+    users.push(host);
+  }
+  DB.saveUsers(users);
+  DB.setSession(host.id);
+  // create pending experience
+  const e=wizData.exp;
+  const exp={id:uid(),hostId:host.id,hostName:host.name,title:e.title,category:e.category,region:e.region,location:e.location,
+    price:+e.price,durationHrs:+e.durationHrs,groupMax:+e.groupMax,summary:e.summary,
+    desc:[e.summary,'More details will be added by '+host.name.split(' ')[0]+' before launch.'],
+    inc:['Local guide','Safety briefing'],img:e.img||IMG('1505228395891-9a51e7e86bf6'),gallery:[],
+    rating:'0.00',reviews:0,status:'pending',createdAt:Date.now()};
+  const exps=DB.experiences(); exps.unshift(exp); DB.saveExperiences(exps);
+  // reset wizard
+  const hostName=host.name;
+  wizStep=1; wizData={ name:'',email:'',pass:'',business:'',nif:'',phone:'',base:'',about:'',languages:'',category:'ocean',years:'',
+    docs:{id:null,license:null,insurance:null},
+    exp:{title:'',category:'ocean',region:'Madeira',location:'',price:'',durationHrs:'',groupMax:'',summary:'',img:''} };
+  openModal(`
+    <div class="modal-head"><h3>Application submitted</h3><span class="x" onclick="closeModal()">×</span></div>
+    <div class="modal-body" style="text-align:center">
+      <div class="confirm-mark">⏱</div>
+      <p class="muted-line">Thanks ${escapeHtml(hostName.split(' ')[0])}. Our team will verify your documents and your first listing within <b style="color:var(--ink)">24 hours</b>. You will go live the moment you are approved.</p>
+      <button class="btn btn-primary btn-block btn-lg" style="margin-top:18px" onclick="closeModal();location.hash='#/dashboard'">Go to host dashboard</button>
+    </div>`);
+}
+function buildHostProfile(){
+  return {status:'pending',business:wizData.business,nif:wizData.nif,phone:wizData.phone,base:wizData.base,
+    about:wizData.about,languages:wizData.languages,category:wizData.category,years:wizData.years,
+    docs:[wizData.docs.id,wizData.docs.license,wizData.docs.insurance].filter(Boolean),submittedAt:Date.now()};
+}
+function bindHostNav(){
+  const c=document.querySelector('.wiz'); if(!c) return;
+  // nav buttons are rendered separately below the card
+}
+
+/* ============================ DASHBOARD ============================ */
+let dashTab='overview';
+function viewDashboard(){
+  const u=me();
+  if(!u){ location.hash='#/auth'; return '<section class="dash"><div class="wrap"></div></section>'; }
+  if(u.role==='admin'){ location.hash='#/admin'; return ''; }
+  if(u.role==='host') return hostDashboard(u);
+  return travelerDashboard(u);
+}
+function travelerDashboard(u){
+  const mine=DB.bookings().filter(b=>b.userId===u.id);
+  const upcoming=mine.filter(b=>new Date(b.date)>=new Date(new Date().toDateString()));
+  return `<section class="dash"><div class="wrap">
+    <div class="dash-head"><div><h1 class="serif">Hello, ${escapeHtml(u.name.split(' ')[0])}</h1><p>Your trips and bookings in one place.</p></div>
+      <a href="#/explore" class="btn btn-primary">Find an experience</a></div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="k">Total bookings</div><div class="v">${mine.length}</div></div>
+      <div class="stat-card"><div class="k">Upcoming</div><div class="v">${upcoming.length}</div></div>
+      <div class="stat-card"><div class="k">Total spent</div><div class="v">${money(mine.reduce((s,b)=>s+b.subtotal,0))}</div></div>
+      <div class="stat-card"><div class="k">Become a host</div><div class="v" style="font-size:15px;font-family:Inter;font-weight:600;margin-top:12px"><a href="#/host" style="color:var(--ocean)">Start hosting →</a></div></div>
+    </div>
+    <h2 class="h-md" style="margin:12px 0 18px">Your bookings</h2>
+    ${mine.length? mine.map(b=>bookingRow(b,'traveler')).join('')
+      : '<div class="empty"><div class="big">🎒</div><h3 class="h-md">No bookings yet</h3><p style="margin-top:8px">When you book an experience it shows up here.</p><a href="#/explore" class="btn btn-primary" style="margin-top:18px">Explore experiences</a></div>'}
+  </div></section>`;
+}
+function bookingRow(b,context){
+  const e=expById(b.expId);
+  const c=e?catOf(e.category):CATS[0];
+  const right = context==='host'
+    ? '<div class="money">'+money(b.payout)+'</div><div class="code">payout · '+money(b.commission)+' fee</div>'
+    : '<div class="money">'+money(b.subtotal)+'</div><div class="code">'+b.codeStr+'</div>';
+  const sub = context==='host' ? (b.customer.name+' · '+b.guests+' guests') : (fmtDate(b.date)+' · '+b.guests+' guests');
+  return '<div class="lcard"><div class="thumb '+c.g+'" '+(e?'data-photo="'+e.img+'"':'')+'></div>'
+    +'<div class="main"><div class="t">'+b.expTitle+'</div><div class="s">'+sub+'</div></div>'
+    +'<div class="right"><span class="pill '+b.status+'">'+b.status+'</span>'+right+'</div></div>';
+}
+function hostDashboard(u){
+  const hp=u.host||{};
+  const myExp=DB.experiences().filter(e=>e.hostId===u.id);
+  const myBk=DB.bookings().filter(b=>b.hostId===u.id);
+  const gross=myBk.reduce((s,b)=>s+b.subtotal,0);
+  const fees=myBk.reduce((s,b)=>s+b.commission,0);
+  const payout=myBk.reduce((s,b)=>s+b.payout,0);
+  const liveCount=myExp.filter(e=>e.status==='live').length;
+  const pendingCount=myExp.filter(e=>e.status==='pending').length;
+  const banner = hp.status==='verified'
+    ? '<div class="banner ok"><span class="ic">✓</span><div>You are a <b>verified host</b>. New listings still pass a quick content check before going live.</div></div>'
+    : hp.status==='rejected'
+    ? '<div class="banner pending" style="background:#fdecea;border-color:#f4cfcb;color:#a23a35"><span class="ic">⚠</span><div>Your application needs changes. Our team left a note, please re submit your documents.</div></div>'
+    : '<div class="banner pending"><span class="ic">⏱</span><div>Your account is <b>under review</b>. We verify within 24 hours. Listings stay hidden until you are approved.</div></div>';
+
+  const tabs=[['overview','Overview'],['listings','Listings'],['bookings','Bookings'],['account','Account']];
+  let body='';
+  if(dashTab==='overview'){
+    body=`<div class="stat-grid">
+      <div class="stat-card"><div class="k">Gross sales</div><div class="v">${money(gross)}</div><div class="sub">${myBk.length} bookings</div></div>
+      <div class="stat-card"><div class="k">Commission (15%)</div><div class="v">${money(fees)}</div><div class="sub">platform fee</div></div>
+      <div class="stat-card"><div class="k">Your payout</div><div class="v" style="color:var(--ocean-deep)">${money(payout)}</div><div class="sub">net to you</div></div>
+      <div class="stat-card"><div class="k">Live listings</div><div class="v">${liveCount}<small> / ${myExp.length}</small></div><div class="sub">${pendingCount} in review</div></div>
+    </div>
+    <h2 class="h-md" style="margin:8px 0 16px">Recent bookings</h2>
+    ${myBk.length? myBk.slice(0,5).map(b=>bookingRow(b,'host')).join('') : '<p class="muted-line">No bookings yet. Once a listing is live, bookings land here.</p>'}`;
+  } else if(dashTab==='listings'){
+    body=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <h2 class="h-md">Your listings</h2>
+        <button class="btn btn-primary btn-sm" onclick="openNewListing()" ${hp.status!=='verified'?'disabled title="Verify your account first"':''}>+ New listing</button></div>
+      ${ hp.status!=='verified' ? '<div class="banner pending"><span class="ic">⏱</span><div>You can add new listings once your account is verified.</div></div>':''}
+      ${myExp.length? myExp.map(e=>listingRow(e)).join('') : '<p class="muted-line">No listings yet.</p>'}`;
+  } else if(dashTab==='bookings'){
+    body=`<h2 class="h-md" style="margin-bottom:16px">All bookings</h2>
+      ${myBk.length? myBk.map(b=>bookingRow(b,'host')).join('') : '<p class="muted-line">No bookings yet.</p>'}`;
+  } else {
+    body=`<h2 class="h-md" style="margin-bottom:16px">Account and verification</h2>
+      <div class="review-list" style="max-width:560px">
+        <div class="rl"><span class="k">Status</span><span class="v"><span class="pill ${hp.status||'pending'}">${hp.status||'pending'}</span></span></div>
+        <div class="rl"><span class="k">Business</span><span class="v">${escapeHtml(hp.business||'—')}</span></div>
+        <div class="rl"><span class="k">Based in</span><span class="v">${escapeHtml(hp.base||'—')}</span></div>
+        <div class="rl"><span class="k">Phone</span><span class="v">${escapeHtml(hp.phone||'—')}</span></div>
+        <div class="rl"><span class="k">Languages</span><span class="v">${escapeHtml(hp.languages||'—')}</span></div>
+        <div class="rl"><span class="k">Documents</span><span class="v">${(hp.docs||[]).length} uploaded</span></div>
+      </div>`;
+  }
+  return `<section class="dash"><div class="wrap">
+    <div class="dash-head"><div><h1 class="serif">${escapeHtml(hp.business||u.name)}</h1><p>Host dashboard · ${escapeHtml(hp.base||'')}</p></div></div>
+    ${banner}
+    <div class="tabs">${tabs.map(t=>'<button class="'+(dashTab===t[0]?'on':'')+'" onclick="setDashTab(\''+t[0]+'\')">'+t[1]+(t[0]==='listings'&&pendingCount?'<span class="badge">'+pendingCount+'</span>':'')+'</button>').join('')}</div>
+    ${body}
+  </div></section>`;
+}
+function setDashTab(t){ dashTab=t; router(); }
+function listingRow(e){
+  const c=catOf(e.category);
+  return '<div class="lcard"><div class="thumb '+c.g+'" data-photo="'+e.img+'"></div>'
+    +'<div class="main"><div class="t">'+e.title+'</div><div class="s">'+e.location+', '+e.region+' · '+money(e.price)+' pp · up to '+e.groupMax+'</div></div>'
+    +'<div class="right"><span class="pill '+e.status+'">'+e.status+'</span>'
+    +(e.status==='live'?'<a class="code" href="#/experience/'+e.id+'">view live →</a>':'<span class="code">'+(e.status==='pending'?'awaiting review':'needs changes')+'</span>')
+    +'</div></div>';
+}
+function openNewListing(){
+  const u=me();
+  openModal(`
+    <div class="modal-head"><h3>New listing</h3><span class="x" onclick="closeModal()">×</span></div>
+    <div class="modal-body">
+      <div class="field"><label>Title</label><input id="nl_title" placeholder="Private kayak tour"></div>
+      <div class="field"><label>One line summary</label><input id="nl_summary" placeholder="Paddle into hidden sea caves"></div>
+      <div class="form-row">
+        <div class="field"><label>Category</label><select id="nl_cat">${CATS.map(c=>'<option value="'+c.id+'">'+c.label+'</option>').join('')}</select></div>
+        <div class="field"><label>Region</label><select id="nl_region">${REGIONS.map(r=>'<option>'+r+'</option>').join('')}</select></div>
+      </div>
+      <div class="field"><label>Meeting point</label><input id="nl_loc" placeholder="Garajau"></div>
+      <div class="form-row">
+        <div class="field"><label>Price pp (€)</label><input id="nl_price" type="number" placeholder="42"></div>
+        <div class="field"><label>Duration (h)</label><input id="nl_dur" type="number" step="0.5" placeholder="2"></div>
+      </div>
+      <div class="field"><label>Max group</label><input id="nl_max" type="number" placeholder="8"></div>
+      <button class="btn btn-primary btn-block btn-lg" id="nl_go">Submit for review</button>
+      <p class="bk-note">New listings are checked before going live</p>
+    </div>`);
+  document.getElementById('nl_go').onclick=()=>{
+    const g=id=>document.getElementById(id).value.trim();
+    const title=g('nl_title'),summary=g('nl_summary'),loc=g('nl_loc'),price=g('nl_price'),dur=g('nl_dur'),max=g('nl_max');
+    if(!title||!summary||!loc||!price||!dur||!max){ toast('Fill all fields','err'); return; }
+    const exp={id:uid(),hostId:u.id,hostName:u.name,title,category:g('nl_cat'),region:g('nl_region'),location:loc,
+      price:+price,durationHrs:+dur,groupMax:+max,summary,desc:[summary],inc:['Local guide','Safety briefing'],
+      img:IMG('1505228395891-9a51e7e86bf6'),gallery:[],rating:'0.00',reviews:0,status:'pending',createdAt:Date.now()};
+    const arr=DB.experiences(); arr.unshift(exp); DB.saveExperiences(arr);
+    closeModal(); toast('Listing submitted for review'); dashTab='listings'; router();
+  };
+}
+
+/* ============================ ADMIN ============================ */
+let adminTab='hosts';
+function viewAdmin(){
+  const u=me();
+  if(!u || u.role!=='admin'){ location.hash='#/auth'; toast('Admin access only','err'); return '<section class="dash"><div class="wrap"></div></section>'; }
+  const users=DB.users(), exps=DB.experiences(), bks=DB.bookings();
+  const pendingHosts=users.filter(x=>x.role==='host'&&x.host&&x.host.status==='pending');
+  const pendingExp=exps.filter(e=>e.status==='pending');
+  const revenue=bks.reduce((s,b)=>s+b.commission,0);
+  const gmv=bks.reduce((s,b)=>s+b.subtotal,0);
+
+  const tabs=[['hosts','Host applications',pendingHosts.length],['listings','Listing review',pendingExp.length],['bookings','Bookings',0],['users','Users',0]];
+  let body='';
+  if(adminTab==='hosts'){
+    body = pendingHosts.length
+      ? pendingHosts.map(h=>hostAppCard(h)).join('')
+      : '<div class="empty"><div class="big">✓</div><h3 class="h-md">No applications waiting</h3><p style="margin-top:8px">New host applications will appear here for review.</p></div>';
+    const verified=users.filter(x=>x.role==='host'&&x.host&&x.host.status==='verified');
+    if(verified.length) body+='<h2 class="h-md" style="margin:30px 0 14px">Verified hosts</h2>'+verified.map(h=>hostAppCard(h,true)).join('');
+  } else if(adminTab==='listings'){
+    body = pendingExp.length
+      ? pendingExp.map(e=>listingReviewCard(e)).join('')
+      : '<div class="empty"><div class="big">✓</div><h3 class="h-md">Nothing to review</h3><p style="margin-top:8px">Pending listings show up here.</p></div>';
+  } else if(adminTab==='bookings'){
+    body = '<div class="result-meta"><span><b style="color:var(--ink)">'+bks.length+'</b> bookings · '+money(gmv)+' gross</span></div>'
+      + (bks.length? bks.map(b=>adminBookingRow(b)).join('') : '<p class="muted-line">No bookings yet.</p>');
+  } else {
+    body = users.map(x=>'<div class="lcard"><div class="thumb" style="background:'+avFor(x.name)+';display:grid;place-items:center;color:#fff;font-family:Fraunces;font-weight:600;font-size:18px">'+initials(x.name)+'</div>'
+      +'<div class="main"><div class="t">'+escapeHtml(x.name)+'</div><div class="s">'+escapeHtml(x.email)+'</div></div>'
+      +'<div class="right"><span class="pill '+(x.role==='admin'?'verified':x.role==='host'?'live':'pending')+'">'+x.role+'</span></div></div>').join('');
+  }
+  return `<section class="dash"><div class="wrap">
+    <div class="dash-head"><div><h1 class="serif">Admin desk</h1><p>Verify hosts, approve listings, watch the numbers.</p></div></div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="k">Platform revenue</div><div class="v" style="color:var(--ocean-deep)">${money(revenue)}</div><div class="sub">15% of ${money(gmv)} GMV</div></div>
+      <div class="stat-card"><div class="k">Pending hosts</div><div class="v">${pendingHosts.length}</div><div class="sub">awaiting review</div></div>
+      <div class="stat-card"><div class="k">Pending listings</div><div class="v">${pendingExp.length}</div><div class="sub">awaiting review</div></div>
+      <div class="stat-card"><div class="k">Live experiences</div><div class="v">${exps.filter(e=>e.status==='live').length}</div><div class="sub">${users.filter(x=>x.role==='host').length} hosts</div></div>
+    </div>
+    <div class="tabs">${tabs.map(t=>'<button class="'+(adminTab===t[0]?'on':'')+'" onclick="setAdminTab(\''+t[0]+'\')">'+t[1]+(t[2]?'<span class="badge">'+t[2]+'</span>':'')+'</button>').join('')}</div>
+    ${body}
+  </div></section>`;
+}
+function setAdminTab(t){ adminTab=t; router(); }
+function hostAppCard(h,verified){
+  const hp=h.host;
+  const docs=(hp.docs||[]).map(d=>'<span class="code" style="background:var(--surface);padding:3px 9px;border-radius:7px;margin-right:6px">📄 '+escapeHtml(d.name)+'</span>').join('');
+  const acts = verified ? '<span class="pill verified">✓ verified</span>'
+    : '<button class="btn btn-ok btn-sm" onclick="verifyHost(\''+h.id+'\')">Approve</button><button class="btn btn-danger btn-sm" onclick="rejectHost(\''+h.id+'\')">Reject</button>';
+  return `<div class="lcard" style="align-items:flex-start">
+    <div class="thumb" style="background:linear-gradient(135deg,${avFor(h.name)},${avFor(h.name)}cc);display:grid;place-items:center;color:#fff;font-family:Fraunces;font-weight:600;font-size:20px">${initials(h.name)}</div>
+    <div class="main">
+      <div class="t">${escapeHtml(hp.business||h.name)} <span class="code">· ${escapeHtml(h.name)}</span></div>
+      <div class="s">${escapeHtml(hp.base||'')} · ${escapeHtml(hp.languages||'')} · ${catOf(hp.category).label}</div>
+      <div class="muted-line" style="font-size:13px;margin:8px 0">${escapeHtml(hp.about||'')}</div>
+      <div>${docs||'<span class="code">No documents</span>'}</div>
+    </div>
+    <div class="right"><div class="acts">${acts}</div></div>
+  </div>`;
+}
+function verifyHost(id){
+  const users=DB.users(); const i=users.findIndex(u=>u.id===id);
+  if(i<0) return; users[i].host.status='verified'; DB.saveUsers(users);
+  toast(users[i].name.split(' ')[0]+' verified'); router();
+}
+function rejectHost(id){
+  const users=DB.users(); const i=users.findIndex(u=>u.id===id);
+  if(i<0) return; users[i].host.status='rejected'; DB.saveUsers(users);
+  toast('Host application rejected','err'); router();
+}
+function listingReviewCard(e){
+  const host=DB.users().find(u=>u.id===e.hostId);
+  const hostVerified = host&&host.host&&host.host.status==='verified';
+  const c=catOf(e.category);
+  return `<div class="lcard" style="align-items:flex-start">
+    <div class="thumb ${c.g}" data-photo="${e.img}"></div>
+    <div class="main">
+      <div class="t">${e.title}</div>
+      <div class="s">${e.location}, ${e.region} · ${money(e.price)} pp · up to ${e.groupMax} · ${e.durationHrs}h</div>
+      <div class="muted-line" style="font-size:13px;margin-top:6px">${escapeHtml(e.summary)}</div>
+      <div class="code" style="margin-top:6px">Host: ${escapeHtml(e.hostName)} ${hostVerified?'<span class="pill verified" style="margin-left:6px">host verified</span>':'<span class="pill pending" style="margin-left:6px">host not verified</span>'}</div>
+    </div>
+    <div class="right"><div class="acts">
+      <button class="btn btn-ok btn-sm" onclick="approveExp('${e.id}')" ${hostVerified?'':'disabled title="Verify the host first"'}>Approve</button>
+      <button class="btn btn-danger btn-sm" onclick="rejectExp('${e.id}')">Reject</button>
+    </div></div>
+  </div>`;
+}
+function approveExp(id){
+  const host=(()=>{ const e=expById(id); return e?DB.users().find(u=>u.id===e.hostId):null; })();
+  if(!host||!host.host||host.host.status!=='verified'){ toast('Verify the host before publishing','err'); return; }
+  const exps=DB.experiences(); const i=exps.findIndex(e=>e.id===id);
+  exps[i].status='live'; if(exps[i].reviews===0){ exps[i].rating=(4.7+Math.random()*0.3).toFixed(2); }
+  DB.saveExperiences(exps); toast('Listing is live'); router();
+}
+function rejectExp(id){
+  const exps=DB.experiences(); const i=exps.findIndex(e=>e.id===id);
+  exps[i].status='rejected'; DB.saveExperiences(exps); toast('Listing rejected','err'); router();
+}
+function adminBookingRow(b){
+  const e=expById(b.expId); const c=e?catOf(e.category):CATS[0];
+  return '<div class="lcard"><div class="thumb '+c.g+'" '+(e?'data-photo="'+e.img+'"':'')+'></div>'
+    +'<div class="main"><div class="t">'+b.expTitle+'</div><div class="s">'+escapeHtml(b.customer.name)+' · '+fmtDate(b.date)+' · '+b.guests+' guests · '+b.codeStr+'</div></div>'
+    +'<div class="right"><div class="money">'+money(b.subtotal)+'</div><div class="code" style="color:var(--ocean)">+'+money(b.commission)+' fee</div></div></div>';
+}
+
+/* ============================ 404 ============================ */
+function view404(){
+  return '<section class="dash"><div class="wrap"><div class="empty"><div class="big">🧭</div><h2 class="h-md">Page not found</h2><p style="margin-top:8px">That link does not lead anywhere.</p><a href="#/" class="btn btn-primary" style="margin-top:18px">Back home</a></div></div></section>';
+}
+
+/* ============================ BIND AFTER RENDER ============================ */
+const _router=router;
+router=function(){
+  _router();
+  const root=(location.hash||'#/').replace('#/','').split('/')[0].split('?')[0];
+  if(root==='') bindHome();
+  else if(root==='explore') bindExplore();
+  else if(root==='experience'){ const id=(location.hash.replace('#/','').split('/')[1]||'').split('?')[0]; const e=expById(id); if(e) bindExperience(e); }
+  else if(root==='auth') bindAuth();
+  else if(root==='host'){ bindHost(); mountWizNav(); }
+  // hydrate any lcard / thumb photos that use data-photo
+  document.querySelectorAll('.thumb[data-photo],.ph[data-photo]').forEach(el=>{
+    const src=el.getAttribute('data-photo'); el.removeAttribute('data-photo');
+    const im=new Image(); im.onload=()=>el.style.backgroundImage='url('+src+')'; im.src=src;
+  });
+};
+function mountWizNav(){
+  const card=document.getElementById('wizCard'); if(!card) return;
+  // build nav row under card
+  const wrap=card.parentElement;
+  let nav=document.getElementById('wizNavRow');
+  if(nav) nav.remove();
+  nav=document.createElement('div'); nav.id='wizNavRow'; nav.className='wiz-nav';
+  const back = wizStep>1 ? '<button class="btn btn-line btn-lg" id="wizBackBtn">← Back</button>' : '<span></span>';
+  const next = wizStep<5 ? '<button class="btn btn-primary btn-lg" id="wizNextBtn">Continue →</button>'
+    : '<button class="btn btn-dark btn-lg" id="wizSubmitBtn">Submit application</button>';
+  nav.innerHTML=back+next;
+  wrap.appendChild(nav);
+  const b=document.getElementById('wizBackBtn'); if(b) b.onclick=wizBack;
+  const n=document.getElementById('wizNextBtn'); if(n) n.onclick=wizNext;
+  const s=document.getElementById('wizSubmitBtn'); if(s) s.onclick=wizSubmit;
+}
+
+/* ============================ BOOT ============================ */
+seed();
+if(!location.hash) location.hash='#/';
+router();
+</script>
+</body>
+</html>

@@ -143,6 +143,20 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
 .composer .go{align-self:center;width:46px;height:46px;border-radius:12px;background:var(--ocean);color:#fff;display:grid;place-items:center;transition:.18s var(--ease)}
 .composer .go:hover{background:var(--ocean-deep)}
 
+/* full-bleed hero with background video */
+.hero{position:relative;min-height:90vh;display:flex;align-items:center;overflow:hidden;padding:0}
+.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;background:var(--ocean-deep)}
+.hero-shade{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(8,32,30,.44),rgba(8,28,26,.24) 40%,rgba(5,22,20,.68))}
+.hero-inner{position:relative;z-index:2;width:100%;text-align:center;color:#fff;padding:96px 24px}
+.hero-inner .eyebrow{color:rgba(255,255,255,.92)}
+.hero-h1{color:#fff;margin:14px auto 0;max-width:18ch;text-shadow:0 2px 30px rgba(0,0,0,.34)}
+.hero-lede{color:rgba(255,255,255,.94);margin:18px auto 0;max-width:56ch;text-shadow:0 1px 14px rgba(0,0,0,.3)}
+.hero-search{margin:34px auto 0;max-width:880px;text-align:left;box-shadow:var(--shadow-lg)}
+.hero-go{border-radius:12px;padding:0 26px;align-self:stretch;white-space:nowrap;font-size:15px}
+.hero-trust{justify-content:center;margin-top:24px}
+.hero-trust .t{color:rgba(255,255,255,.92)}
+.hero-trust .t b{color:#fff}
+
 /* trust row */
 .trust{display:flex;gap:28px;margin-top:26px;flex-wrap:wrap}
 .trust .t{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
@@ -410,6 +424,9 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
   .composer{flex-wrap:wrap}
   .composer .sep{display:none}
   .composer .field{flex-basis:46%}
+  .hero-inner{padding:76px 18px}
+  .hero{min-height:86vh}
+  .hero-search .hero-go{flex:1 0 100%;margin-top:8px;padding:13px}
   .grid,.grid-2,.steps{grid-template-columns:1fr}
   .form-row{grid-template-columns:1fr}
   .exp-hero{grid-template-columns:1fr;grid-template-rows:none;height:auto}
@@ -499,6 +516,7 @@ en:{
   hero_lede:`Boat trips, mountain trails, wine tastings and hidden corners — unique experiences shared by the verified locals who know the island by heart.`,
   composer_where:`Where`, composer_where_any:`Anywhere in Madeira`, composer_exp:`Experience`, composer_exp_any:`Any kind`,
   composer_search:`Search`, composer_search_ph:`sunset, levada, wine...`,
+  search_what:`Activity`, search_what_ph:`Search places or activities`, search_when:`When`, search_who:`Travelers`, traveler_one:`traveler`, travelers_many:`travelers`,
   trust_verified:`✓ <b>Verified hosts</b> only`, trust_rating:`★ <b>4.8</b> average rating`, trust_cancel:`⚡ Free cancellation`,
   feat_eyebrow:`Loved right now`, feat_title:`Featured experiences`, feat_seeall:`See all experiences →`,
   how_eyebrow:`Simple by design`, how_title:`How Vivência works`,
@@ -608,6 +626,7 @@ pt:{
   hero_lede:`Passeios de barco, trilhos na montanha, provas de vinho e cantos escondidos — experiências únicas partilhadas por locais verificados que conhecem a ilha de cor.`,
   composer_where:`Onde`, composer_where_any:`Toda a ilha da Madeira`, composer_exp:`Experiência`, composer_exp_any:`Qualquer tipo`,
   composer_search:`Pesquisar`, composer_search_ph:`pôr do sol, levada, vinho...`,
+  search_what:`Atividade`, search_what_ph:`Locais ou atividades`, search_when:`Quando`, search_who:`Viajantes`, traveler_one:`viajante`, travelers_many:`viajantes`,
   trust_verified:`✓ Apenas <b>anfitriões verificados</b>`, trust_rating:`★ <b>4.8</b> de avaliação média`, trust_cancel:`⚡ Cancelamento gratuito`,
   feat_eyebrow:`Em destaque agora`, feat_title:`Experiências em destaque`, feat_seeall:`Ver todas as experiências →`,
   how_eyebrow:`Simples por natureza`, how_title:`Como funciona a Vivência`,
@@ -717,6 +736,7 @@ fr:{
   hero_lede:`Sorties en bateau, sentiers de montagne, dégustations de vin et coins secrets — des expériences uniques partagées par des locaux vérifiés qui connaissent l'île par cœur.`,
   composer_where:`Où`, composer_where_any:`Toute l'île de Madère`, composer_exp:`Expérience`, composer_exp_any:`Tout type`,
   composer_search:`Rechercher`, composer_search_ph:`coucher de soleil, levada, vin...`,
+  search_what:`Activité`, search_what_ph:`Lieux ou activités`, search_when:`Quand`, search_who:`Voyageurs`, traveler_one:`voyageur`, travelers_many:`voyageurs`,
   trust_verified:`✓ <b>Hôtes vérifiés</b> uniquement`, trust_rating:`★ <b>4.8</b> de note moyenne`, trust_cancel:`⚡ Annulation gratuite`,
   feat_eyebrow:`Coups de cœur du moment`, feat_title:`Expériences à la une`, feat_seeall:`Voir toutes les expériences →`,
   how_eyebrow:`Simple par conception`, how_title:`Comment fonctionne Vivência`,
@@ -826,6 +846,7 @@ es:{
   hero_lede:`Paseos en barco, senderos de montaña, catas de vino y rincones escondidos — experiencias únicas compartidas por locales verificados que conocen la isla de memoria.`,
   composer_where:`Dónde`, composer_where_any:`Toda la isla de Madeira`, composer_exp:`Experiencia`, composer_exp_any:`Cualquier tipo`,
   composer_search:`Buscar`, composer_search_ph:`atardecer, levada, vino...`,
+  search_what:`Actividad`, search_what_ph:`Lugares o actividades`, search_when:`Cuándo`, search_who:`Viajeros`, traveler_one:`viajero`, travelers_many:`viajeros`,
   trust_verified:`✓ Solo <b>anfitriones verificados</b>`, trust_rating:`★ <b>4.8</b> de valoración media`, trust_cancel:`⚡ Cancelación gratuita`,
   feat_eyebrow:`Lo más querido ahora`, feat_title:`Experiencias destacadas`, feat_seeall:`Ver todas las experiencias →`,
   how_eyebrow:`Simple por diseño`, how_title:`Cómo funciona Vivência`,
@@ -945,6 +966,9 @@ const CATS = [
 const REGIONS = ['Funchal','Câmara de Lobos','Calheta','Santana','Machico','Porto Santo'];
 const catOf = id => CATS.find(c=>c.id===id) || CATS[0];
 const IMG = id => 'https://images.unsplash.com/photo-'+id+'?auto=format&fit=crop&w=1000&q=70';
+/* Hero background video — swap HERO_VIDEO for your own Madeira drone footage when ready */
+const HERO_VIDEO = 'https://videos.pexels.com/video-files/2169880/2169880-uhd_2560_1440_30fps.mp4';
+const HERO_POSTER = 'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?auto=format&fit=crop&w=1920&q=75';
 
 function seed(){
   if(DB.r('seed_version',0) >= 3) return;
@@ -1168,33 +1192,33 @@ function viewHome(){
   const live=DB.experiences().filter(e=>e.status==='live');
   const featured=live.slice(0,6);
   return `
-  <section class="hero"><div class="wrap"><div class="hero-grid">
-    <div>
+  <section class="hero">
+    <video class="hero-video" autoplay muted loop playsinline preload="auto" poster="${HERO_POSTER}">
+      <source src="${HERO_VIDEO}" type="video/mp4">
+    </video>
+    <div class="hero-shade"></div>
+    <div class="hero-inner">
       <span class="eyebrow">${t('hero_eyebrow')}</span>
-      <h1 class="h-xl">${t('hero_title')}</h1>
-      <p class="lede">${t('hero_lede')}</p>
-      <div class="composer" id="homeComposer">
-        <div class="field"><label>${t('composer_where')}</label>
-          <select id="hcRegion"><option value="">${t('composer_where_any')}</option>${REGIONS.map(r=>'<option>'+r+'</option>').join('')}</select></div>
+      <h1 class="h-xl hero-h1">${t('hero_title')}</h1>
+      <p class="lede hero-lede">${t('hero_lede')}</p>
+      <div class="composer hero-search" id="homeComposer">
+        <div class="field"><label>${t('search_what')}</label>
+          <input id="hsQ" placeholder="${t('search_what_ph')}" /></div>
         <div class="sep"></div>
-        <div class="field"><label>${t('composer_exp')}</label>
-          <select id="hcCat"><option value="">${t('composer_exp_any')}</option>${CATS.map(c=>'<option value="'+c.id+'">'+catLabel(c)+'</option>').join('')}</select></div>
+        <div class="field"><label>${t('search_when')}</label>
+          <input id="hsDate" type="date" min="${new Date().toISOString().slice(0,10)}" /></div>
         <div class="sep"></div>
-        <div class="field"><label>${t('composer_search')}</label>
-          <input id="hcQ" placeholder="${t('composer_search_ph')}" /></div>
-        <button class="go" id="hcGo" aria-label="${t('composer_search')}">→</button>
+        <div class="field"><label>${t('search_who')}</label>
+          <select id="hsTravelers">${[1,2,3,4,5,6,7,8].map(n=>'<option value="'+n+'">'+n+' '+(n===1?t('traveler_one'):t('travelers_many'))+'</option>').join('')}</select></div>
+        <button class="btn btn-primary hero-go" id="hsGo">${t('composer_search')}</button>
       </div>
-      <div class="trust">
+      <div class="trust hero-trust">
         <div class="t">${t('trust_verified')}</div>
         <div class="t">${t('trust_rating')}</div>
         <div class="t">${t('trust_cancel')}</div>
       </div>
     </div>
-    <div class="hero-art">
-      ${photo(IMG('1505228395891-9a51e7e86bf6'),'g-ocean')}
-      <div class="hero-badge"><div class="av">T</div><div><b>Tiago, Funchal</b><span>Sunset cruise · just booked</span></div></div>
-    </div>
-  </div></div></section>
+  </section>
 
   <section class="sec-tight"><div class="wrap">
     <div class="chips" id="homeCats">
@@ -1239,16 +1263,18 @@ afterRender._home=()=>{};
 /* attach home composer after render via global hook */
 const origRouter=router;
 function bindHome(){
-  const go=document.getElementById('hcGo'); if(!go) return;
+  const go=document.getElementById('hsGo'); if(!go) return;
   const run=()=>{
-    const r=document.getElementById('hcRegion').value;
-    const c=document.getElementById('hcCat').value;
-    const q=document.getElementById('hcQ').value.trim();
-    const p=new URLSearchParams(); if(r)p.set('region',r); if(c)p.set('cat',c); if(q)p.set('q',q);
-    location.hash='#/explore?'+p.toString();
+    const q=document.getElementById('hsQ').value.trim();
+    const d=document.getElementById('hsDate').value;
+    const tr=document.getElementById('hsTravelers').value;
+    const p=new URLSearchParams();
+    if(q)p.set('q',q); if(d)p.set('date',d); if(tr&&tr!=='1')p.set('travelers',tr);
+    const qs=p.toString();
+    location.hash='#/explore'+(qs?('?'+qs):'');
   };
   go.onclick=run;
-  document.getElementById('hcQ').addEventListener('keydown',e=>{ if(e.key==='Enter') run(); });
+  document.getElementById('hsQ').addEventListener('keydown',e=>{ if(e.key==='Enter') run(); });
 }
 
 /* ============================ EXPLORE ============================ */

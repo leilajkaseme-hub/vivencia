@@ -447,8 +447,15 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
 <div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
 <div class="toast-host" id="toastHost"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 "use strict";
+/* ============================ SUPABASE ============================ */
+const SB_URL='https://hciogimdiuujmrpovqhl.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjaW9naW1kaXV1am1ycG92cWhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5MDA3OTksImV4cCI6MjA5NzQ3Njc5OX0.WHpSHsyUMdbTKGpgms4AD_86ON9DF-ePfI_CHj5yvkQ';
+let SB=null, AUTH_UID=null;
+try{ if(window.supabase) SB=window.supabase.createClient(SB_URL,SB_KEY); }catch(e){ console.warn('Supabase init failed',e); }
+
 /* ============================ STORE ============================ */
 const DB = {
   r(k, d){ try{ const v=localStorage.getItem('viv_'+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
@@ -540,6 +547,7 @@ en:{
   auth_password:`Password`, auth_signin_btn:`Sign in`, auth_create_btn:`Create account`, demo_logins:`Demo logins`,
   demo_traveler:`Traveler`, demo_host:`Host`, demo_admin:`Admin`,
   auth_host_q:`Want to share your own experiences?`, auth_host_cta:`Sign up as a host →`,
+  auth_check_email:`Check your email to confirm your account.`, host_need_account:`Create an account or sign in to start hosting.`,
   auth_fill_toast:`Fill in email and password`, auth_wrong_toast:`Wrong email or password`, auth_signedin_toast:`Signed in as {name}`,
   auth_addname_toast:`Add your name`, auth_emailexists_toast:`That email already exists`, auth_created_toast:`Account created`, signedout_toast:`Signed out`,
   host_already_t:`You are already a host`, host_already_p:`Manage your listings and bookings from your dashboard.`, host_already_btn:`Go to host dashboard`,
@@ -650,6 +658,7 @@ pt:{
   auth_password:`Palavra-passe`, auth_signin_btn:`Entrar`, auth_create_btn:`Criar conta`, demo_logins:`Acessos de demonstração`,
   demo_traveler:`Viajante`, demo_host:`Anfitrião`, demo_admin:`Administrador`,
   auth_host_q:`Quer partilhar as suas próprias experiências?`, auth_host_cta:`Registe-se como anfitrião →`,
+  auth_check_email:`Verifique o seu email para confirmar a conta.`, host_need_account:`Crie uma conta ou inicie sessão para se tornar anfitrião.`,
   auth_fill_toast:`Preencha o email e a palavra-passe`, auth_wrong_toast:`Email ou palavra-passe incorretos`, auth_signedin_toast:`Sessão iniciada como {name}`,
   auth_addname_toast:`Indique o seu nome`, auth_emailexists_toast:`Esse email já existe`, auth_created_toast:`Conta criada`, signedout_toast:`Sessão terminada`,
   host_already_t:`Já é anfitrião`, host_already_p:`Faça a gestão dos seus anúncios e reservas no seu painel.`, host_already_btn:`Ir para o painel de anfitrião`,
@@ -760,6 +769,7 @@ fr:{
   auth_password:`Mot de passe`, auth_signin_btn:`Se connecter`, auth_create_btn:`Créer un compte`, demo_logins:`Identifiants de démo`,
   demo_traveler:`Voyageur`, demo_host:`Hôte`, demo_admin:`Admin`,
   auth_host_q:`Vous voulez partager vos propres expériences ?`, auth_host_cta:`Inscrivez-vous en tant qu'hôte →`,
+  auth_check_email:`Vérifiez votre email pour confirmer votre compte.`, host_need_account:`Créez un compte ou connectez-vous pour devenir hôte.`,
   auth_fill_toast:`Saisissez l'email et le mot de passe`, auth_wrong_toast:`Email ou mot de passe incorrect`, auth_signedin_toast:`Connecté en tant que {name}`,
   auth_addname_toast:`Ajoutez votre nom`, auth_emailexists_toast:`Cet email existe déjà`, auth_created_toast:`Compte créé`, signedout_toast:`Déconnecté`,
   host_already_t:`Vous êtes déjà hôte`, host_already_p:`Gérez vos annonces et réservations depuis votre tableau de bord.`, host_already_btn:`Aller au tableau de bord hôte`,
@@ -870,6 +880,7 @@ es:{
   auth_password:`Contraseña`, auth_signin_btn:`Iniciar sesión`, auth_create_btn:`Crear cuenta`, demo_logins:`Accesos de demo`,
   demo_traveler:`Viajero`, demo_host:`Anfitrión`, demo_admin:`Admin`,
   auth_host_q:`¿Quieres compartir tus propias experiencias?`, auth_host_cta:`Regístrate como anfitrión →`,
+  auth_check_email:`Revisa tu email para confirmar tu cuenta.`, host_need_account:`Crea una cuenta o inicia sesión para ser anfitrión.`,
   auth_fill_toast:`Rellena el email y la contraseña`, auth_wrong_toast:`Email o contraseña incorrectos`, auth_signedin_toast:`Sesión iniciada como {name}`,
   auth_addname_toast:`Añade tu nombre`, auth_emailexists_toast:`Ese email ya existe`, auth_created_toast:`Cuenta creada`, signedout_toast:`Sesión cerrada`,
   host_already_t:`Ya eres anfitrión`, host_already_p:`Gestiona tus anuncios y reservas desde tu panel.`, host_already_btn:`Ir al panel de anfitrión`,
@@ -1020,7 +1031,31 @@ function seed(){
 }
 
 /* ============================ HELPERS ============================ */
-const me = ()=>{ const id=DB.session(); return id? DB.users().find(u=>u.id===id)||null : null; };
+const me = ()=> AUTH_UID ? (DB.users().find(u=>u.id===AUTH_UID)||null) : null;
+/* Sync the Supabase session into a local user record so the rest of the app keeps working */
+async function syncUser(session){
+  if(!session || !session.user){ AUTH_UID=null; return; }
+  const u=session.user; AUTH_UID=u.id;
+  let prof=null;
+  try{ const r=await SB.from('profiles').select('*').eq('id',u.id).single(); prof=r.data; }catch(e){}
+  const users=DB.users(); let rec=users.find(x=>x.id===u.id);
+  if(!rec){
+    rec={id:u.id, name:(prof&&prof.name)||(u.user_metadata&&u.user_metadata.name)||'', email:u.email||'', role:(prof&&prof.role)||'traveler', createdAt:Date.now()};
+    users.push(rec);
+  } else {
+    rec.email=u.email||rec.email;
+    if(prof){ if(prof.name) rec.name=prof.name; if(prof.role) rec.role=prof.role; }
+  }
+  DB.saveUsers(users);
+}
+async function initAuth(){
+  if(!SB) return;
+  try{
+    const {data}=await SB.auth.getSession();
+    await syncUser(data.session);
+    SB.auth.onAuthStateChange((_evt, sess)=>{ syncUser(sess).then(()=>{ if(typeof renderNav==='function') renderNav(); }); });
+  }catch(e){ console.warn('auth init failed', e); }
+}
 const expById = id => DB.experiences().find(e=>e.id===id);
 const stars = r => { const n=Math.round(r); return '★★★★★'.slice(0,n)+'☆☆☆☆☆'.slice(0,5-n); };
 const initials = n => n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
@@ -1122,7 +1157,7 @@ function renderFooter(){
         <span>${t('foot_made')}</span>
       </div>`;
 }
-function logout(){ DB.setSession(null); toast(t('signedout_toast')); location.hash='#/'; }
+async function logout(){ try{ if(SB) await SB.auth.signOut(); }catch(e){} AUTH_UID=null; toast(t('signedout_toast')); location.hash='#/'; renderNav(); }
 
 /* ============================ ROUTER ============================ */
 function router(){
@@ -1484,38 +1519,37 @@ function viewAuth(){
         <span>${t('auth_host_q')}</span>
         <a href="#/host">${t('auth_host_cta')}</a>
       </div>
-      <div class="demo-hint">
-        <b>${t('demo_logins')}</b><br>
-        ${t('demo_traveler')} · mara@traveler.pt / demo<br>
-        ${t('demo_host')} · tiago@atlanticsail.pt / demo<br>
-        ${t('demo_admin')} · admin@vivencia.pt / admin
-      </div>
     </div>
   </div></section>`;
 }
 function setAuth(m){ authMode=m; router(); }
 function bindAuth(){
   const go=document.getElementById('auGo'); if(!go) return;
-  go.onclick=()=>{
+  const run=async ()=>{
     const email=document.getElementById('auEmail').value.trim().toLowerCase();
     const pass=document.getElementById('auPass').value;
     if(!email||!pass){ toast(t('auth_fill_toast'),'err'); return; }
-    const users=DB.users();
-    if(authMode==='login'){
-      const u=users.find(x=>x.email.toLowerCase()===email);
-      if(!u||u.pass!==pass){ toast(t('auth_wrong_toast'),'err'); return; }
-      DB.setSession(u.id); toast(t('auth_signedin_toast',{name:u.name.split(' ')[0]}));
-      location.hash = u.role==='admin'?'#/admin':'#/dashboard';
-    }else{
-      const name=document.getElementById('auName').value.trim();
-      if(!name){ toast(t('auth_addname_toast'),'err'); return; }
-      if(users.some(x=>x.email.toLowerCase()===email)){ toast(t('auth_emailexists_toast'),'err'); return; }
-      const u={id:uid(),name,email,pass,role:'traveler',createdAt:Date.now()};
-      users.push(u); DB.saveUsers(users); DB.setSession(u.id);
-      toast(t('auth_created_toast')); location.hash='#/dashboard';
-    }
+    if(!SB){ toast('Service indisponible, réessaie','err'); return; }
+    go.disabled=true;
+    try{
+      if(authMode==='login'){
+        const {data,error}=await SB.auth.signInWithPassword({email,password:pass});
+        if(error){ toast(t('auth_wrong_toast'),'err'); return; }
+        await syncUser(data.session);
+        const u=me(); toast(t('auth_signedin_toast',{name:(u&&u.name?u.name.split(' ')[0]:'')}));
+        location.hash = (u&&u.role==='admin')?'#/admin':'#/dashboard';
+      }else{
+        const name=document.getElementById('auName').value.trim();
+        if(!name){ toast(t('auth_addname_toast'),'err'); return; }
+        const {data,error}=await SB.auth.signUp({email,password:pass,options:{data:{name}}});
+        if(error){ toast(error.message||t('auth_emailexists_toast'),'err'); return; }
+        if(data.session){ await syncUser(data.session); toast(t('auth_created_toast')); location.hash='#/dashboard'; }
+        else { toast(t('auth_check_email')); setAuth('login'); }
+      }
+    } finally { go.disabled=false; }
   };
-  document.getElementById('auPass').addEventListener('keydown',e=>{ if(e.key==='Enter') go.click(); });
+  go.onclick=run;
+  document.getElementById('auPass').addEventListener('keydown',e=>{ if(e.key==='Enter') run(); });
 }
 
 /* ============================ HOST WIZARD ============================ */
@@ -1540,7 +1574,15 @@ function viewHost(){
       <h1 class="h-md">${t('host_admin_t')}</h1><p class="muted-line" style="margin-top:10px">${t('host_admin_p')}</p>
       <a href="#/admin" class="btn btn-primary btn-lg" style="margin-top:20px">${t('host_admin_btn')}</a></div></div></section>`;
   }
-  if(u){ wizData.name=u.name; wizData.email=u.email; }
+  if(!u){
+    return `<section class="dash"><div class="wrap"><div class="center-narrow" style="padding:60px 0">
+      <span class="eyebrow">${t('wiz_eyebrow')}</span>
+      <h1 class="h-md" style="margin-top:10px">${t('wiz_title')}</h1>
+      <p class="muted-line" style="margin-top:10px">${t('host_need_account')}</p>
+      <a href="#/auth" class="btn btn-primary btn-lg" style="margin-top:20px">${t('nav_signin')}</a>
+    </div></div></section>`;
+  }
+  wizData.name=u.name; wizData.email=u.email;
   return `<section class="wiz"><div class="wrap" style="max-width:760px">
     <div class="center-narrow" style="margin-bottom:30px;text-align:left">
       <span class="eyebrow">${t('wiz_eyebrow')}</span>
@@ -2046,7 +2088,7 @@ function mountWizNav(){
 seed();
 document.documentElement.lang=CURRENT_LANG;
 if(!location.hash) location.hash='#/';
-router();
+(async()=>{ await initAuth(); router(); })();
 </script>
 </body>
 </html>

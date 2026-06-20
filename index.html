@@ -141,8 +141,8 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
 .hero-search{margin:34px auto 0;max-width:880px;text-align:left;box-shadow:var(--shadow-lg)}
 .hero-go{border-radius:12px;padding:0 26px;align-self:stretch;white-space:nowrap;font-size:15px}
 .hero-trust{justify-content:center;margin-top:26px;gap:10px}
-.hero-trust .t{color:#fff;font-weight:500;background:rgba(8,24,22,.46);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:8px 15px;border-radius:980px;border:1px solid rgba(255,255,255,.16)}
-.hero-trust .t b{color:#fff}
+.hero-trust .t{color:#fff;font-weight:600;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:9px 16px;border-radius:980px;border:1px solid rgba(255,255,255,.22);text-shadow:0 1px 6px rgba(0,0,0,.4)}
+.hero-trust .t b{color:#fff;font-weight:700}
 
 /* trust row */
 .trust{display:flex;gap:28px;margin-top:26px;flex-wrap:wrap}
@@ -1121,7 +1121,7 @@ function renderNav(){
                  '<a href="#/dashboard" class="btn btn-ghost btn-sm">'+t('nav_dashboard')+'</a>';
     right.innerHTML = langSwitcher() + dash + '<button class="btn btn-line btn-sm" onclick="logout()">'+initials(u.name)+' · '+t('nav_signout')+'</button>';
   }else{
-    right.innerHTML=langSwitcher()+'<a href="#/auth" class="btn btn-ghost btn-sm">'+t('nav_signin')+'</a><a href="#/host" class="btn btn-dark btn-sm">'+t('nav_hostcta')+'</a>';
+    right.innerHTML=langSwitcher()+'<a href="#/host" class="btn btn-ghost btn-sm">'+t('nav_hostcta')+'</a><a href="#/auth" class="btn btn-dark btn-sm">'+t('nav_signin')+'</a>';
   }
 }
 function renderFooter(){

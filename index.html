@@ -493,17 +493,20 @@ function mapExp(r){ return { id:r.id, hostId:r.host_id, hostName:r.host_name||''
 function mapBooking(r){ return { id:r.id, codeStr:r.code, expId:r.exp_id, expTitle:r.exp_title, hostId:r.host_id, userId:r.user_id, customer:{name:r.customer_name||'',email:r.customer_email||''}, date:r.date, guests:r.guests, subtotal:Number(r.subtotal)||0, commission:Number(r.commission)||0, payout:Number(r.payout)||0, status:r.status, createdAt:r.created_at }; }
 function mapProfile(p,hv){ const o={ id:p.id, name:p.name||'', role:p.role||'traveler', email:'' }; if(p.host_status||p.business||p.about||p.languages){ o.host={ status:p.host_status, business:p.business||'', base:p.base||'', about:p.about||'', languages:p.languages||'', category:p.category||'ocean', years:p.years||'', nif:(hv&&hv.nif)||'', phone:(hv&&hv.phone)||'', docs:(hv&&hv.docs)||[] }; } return o; }
 async function loadData(){
-  if(!SB) return;
-  try{
-    const ex=await SB.from('experiences').select('*').order('created_at',{ascending:true});
-    if(ex.data) STORE.experiences=ex.data.map(mapExp);
-    const bk=await SB.from('bookings').select('*').order('created_at',{ascending:false});
-    if(bk.data) STORE.bookings=bk.data.map(mapBooking);
-    const pr=await SB.from('profiles').select('*');
-    const hv=await SB.from('host_verification').select('*');
-    const hvMap={}; (hv.data||[]).forEach(x=>hvMap[x.id]=x);
-    if(pr.data) STORE.profiles=pr.data.map(p=>mapProfile(p, hvMap[p.id]));
-  }catch(e){ console.warn('loadData failed', e); }
+  if(SB){
+    try{
+      const ex=await SB.from('experiences').select('*').order('created_at',{ascending:true});
+      if(ex.data) STORE.experiences=ex.data.map(mapExp);
+      const bk=await SB.from('bookings').select('*').order('created_at',{ascending:false});
+      if(bk.data) STORE.bookings=bk.data.map(mapBooking);
+      const pr=await SB.from('profiles').select('*');
+      const hv=await SB.from('host_verification').select('*');
+      const hvMap={}; (hv.data||[]).forEach(x=>hvMap[x.id]=x);
+      if(pr.data) STORE.profiles=pr.data.map(p=>mapProfile(p, hvMap[p.id]));
+    }catch(e){ console.warn('loadData failed', e); }
+  }
+  // never leave the catalogue empty — fall back to built-in demo content
+  if(!STORE.experiences.length) STORE.experiences=demoExperiences();
 }
 /* point the existing accessors at the live (Supabase) data */
 DB.experiences=()=>STORE.experiences;
@@ -1006,20 +1009,10 @@ const IMG = id => 'https://images.unsplash.com/photo-'+id+'?auto=format&fit=crop
 const HERO_VIDEO = 'hero.mp4';
 const HERO_POSTER = 'hero-poster.jpg';
 
-function seed(){
-  if(DB.r('seed_version',0) >= 5) return;
-  const adminId=uid(), h1=uid(), h2=uid(), h3=uid(), trav=uid();
-  const users=[
-    {id:adminId, name:'Admin', email:'admin@vivencia.pt', pass:'admin', role:'admin', createdAt:Date.now()},
-    {id:trav, name:'Mara Lopes', email:'mara@traveler.pt', pass:'demo', role:'traveler', createdAt:Date.now()},
-    {id:h1, name:'Tiago Andrade', email:'tiago@atlanticsail.pt', pass:'demo', role:'host', createdAt:Date.now()-9e8,
-      host:{status:'verified', business:'Atlantic Sail Madeira', nif:'PT512334221', phone:'+351 291 000 111', base:'Funchal, Madeira', about:'Skipper born in Câmara de Lobos, ten years running private charters off the south coast.', languages:'Português, English, Français', category:'ocean', years:'10', docs:[{name:'skipper_license.pdf',type:'application/pdf',size:284014},{name:'maritime_insurance.pdf',type:'application/pdf',size:198220},{name:'id_card.jpg',type:'image/jpeg',size:142003}], submittedAt:Date.now()-9e8}},
-    {id:h2, name:'Inês Carvalho', email:'ines@levada.pt', pass:'demo', role:'host', createdAt:Date.now()-7e8,
-      host:{status:'verified', business:'Laurissilva Walks', nif:'PT509887112', phone:'+351 291 222 333', base:'Santana, Madeira', about:'Mountain guide specialised in the levada network and the laurel forest.', languages:'Português, English, Deutsch', category:'nature', years:'7', docs:[{name:'guide_certification.pdf',type:'application/pdf',size:221140},{name:'liability_cover.pdf',type:'application/pdf',size:176330}], submittedAt:Date.now()-7e8}},
-    {id:h3, name:'Rui Bettencourt', email:'rui@madeiracellar.pt', pass:'demo', role:'host', createdAt:Date.now()-5e8,
-      host:{status:'verified', business:'Funchal Wine Lodge', nif:'PT502110934', phone:'+351 291 444 555', base:'Funchal, Madeira', about:'Madeira wine educator running cellar tastings in the Funchal old town since 2015.', languages:'Português, English, Español', category:'food', years:'9', docs:[{name:'business_license.pdf',type:'application/pdf',size:201330}], submittedAt:Date.now()-5e8}},
-  ];
-  const ex = (hostId,hostName,o)=>Object.assign({id:uid(),hostId,hostName,status:'live',rating:(4.6+Math.random()*0.4).toFixed(2),reviews:Math.floor(40+Math.random()*220),createdAt:Date.now()-Math.random()*4e8,gallery:[]},o);
+/* Built-in demo content shown when the Supabase catalogue is empty (so the site is never blank) */
+function demoExperiences(){
+  const h1=null,h2=null,h3=null; let n=0;
+  const ex = (hostId,hostName,o)=>Object.assign({id:'demo-'+(++n),hostId,hostName,status:'live',rating:(4.6+(n%5)*0.07).toFixed(2),reviews:48+n*19,createdAt:0,gallery:[],_demo:true},o);
   const experiences=[
     ex(h1,'Tiago Andrade',{title:'Private Sunset Yacht Cruise', category:'ocean', region:'Funchal', location:'Funchal Marina', price:95, durationHrs:3, groupMax:8, img:'img/yacht-sunset.jpg',
       summary:'Sail the south coast at golden hour with welcome drinks and a swim stop in a hidden bay.',
@@ -1077,12 +1070,7 @@ function seed(){
       inc:['Private catamaran and crew','Sparkling wine and poncha','Swim and snorkel gear','Towels on board','Hotel pickup in central Funchal'],
       gallery:['img/coast-turquoise.jpg','img/yacht-cruise.jpg']}),
   ];
-  const bk=[
-    {id:uid(), codeStr:code(), expId:experiences[0].id, expTitle:experiences[0].title, hostId:h1, userId:trav, customer:{name:'Mara Lopes',email:'mara@traveler.pt'}, date:'2026-07-04', guests:2, subtotal:190, commission:28.5, payout:161.5, status:'confirmed', createdAt:Date.now()-2e8},
-    {id:uid(), codeStr:code(), expId:experiences[2].id, expTitle:experiences[2].title, hostId:h3, userId:null, customer:{name:'Lukas Berg',email:'lukas@example.de'}, date:'2026-06-30', guests:4, subtotal:260, commission:39, payout:221, status:'confirmed', createdAt:Date.now()-1e8},
-  ];
-  DB.saveUsers(users); DB.saveExperiences(experiences); DB.saveBookings(bk);
-  DB.w('seed_version',5);
+  return experiences;
 }
 
 /* ============================ HELPERS ============================ */
@@ -1571,7 +1559,7 @@ function openBookingFlow(e,date,guests){
     if(!SB){ toast('Service indisponible, réessaie','err'); return; }
     btn.disabled=true;
     const codeStr=code();
-    const row={ code:codeStr, exp_id:e.id, exp_title:e.title, host_id:e.hostId||null, user_id:(u&&u.role!=='admin')?u.id:null,
+    const row={ code:codeStr, exp_id:e._demo?null:e.id, exp_title:e.title, host_id:e._demo?null:(e.hostId||null), user_id:(u&&u.role!=='admin')?u.id:null,
       customer_name:name, customer_email:email, date, guests, subtotal:sub, commission:com, payout, status:'confirmed' };
     const {error}=await SB.from('bookings').insert(row);
     if(error){ btn.disabled=false; toast(error.message||'Booking failed','err'); return; }
@@ -2192,7 +2180,8 @@ function mountWizNav(){
 /* ============================ BOOT ============================ */
 document.documentElement.lang=CURRENT_LANG;
 if(!location.hash) location.hash='#/';
-router(); // first paint (may be empty for a beat)
+STORE.experiences=demoExperiences(); // instant content for first paint
+router();
 (async()=>{ await initAuth(); await loadData(); router(); })();
 </script>
 </body>

@@ -486,6 +486,31 @@ const money = n => '€'+Number(n).toLocaleString('en-IE',{minimumFractionDigits
 const money2 = n => '€'+Number(n).toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2});
 const COMMISSION = 0.15;
 
+/* ============================ DATA (Supabase-backed) ============================ */
+const STORE={ experiences:[], bookings:[], profiles:[] };
+let SESSION_EMAIL='';
+function mapExp(r){ return { id:r.id, hostId:r.host_id, hostName:r.host_name||'', title:r.title, category:r.category, region:r.region, location:r.location||'', price:Number(r.price)||0, durationHrs:Number(r.duration_hrs)||0, groupMax:Number(r.group_max)||1, summary:r.summary||'', desc:r.descr||[], inc:r.inc||[], img:r.img||'', gallery:r.gallery||[], rating:(r.rating!=null?String(r.rating):'0'), reviews:r.reviews||0, status:r.status, featured:!!r.featured, createdAt:r.created_at }; }
+function mapBooking(r){ return { id:r.id, codeStr:r.code, expId:r.exp_id, expTitle:r.exp_title, hostId:r.host_id, userId:r.user_id, customer:{name:r.customer_name||'',email:r.customer_email||''}, date:r.date, guests:r.guests, subtotal:Number(r.subtotal)||0, commission:Number(r.commission)||0, payout:Number(r.payout)||0, status:r.status, createdAt:r.created_at }; }
+function mapProfile(p,hv){ const o={ id:p.id, name:p.name||'', role:p.role||'traveler', email:'' }; if(p.host_status||p.business||p.about||p.languages){ o.host={ status:p.host_status, business:p.business||'', base:p.base||'', about:p.about||'', languages:p.languages||'', category:p.category||'ocean', years:p.years||'', nif:(hv&&hv.nif)||'', phone:(hv&&hv.phone)||'', docs:(hv&&hv.docs)||[] }; } return o; }
+async function loadData(){
+  if(!SB) return;
+  try{
+    const ex=await SB.from('experiences').select('*').order('created_at',{ascending:true});
+    if(ex.data) STORE.experiences=ex.data.map(mapExp);
+    const bk=await SB.from('bookings').select('*').order('created_at',{ascending:false});
+    if(bk.data) STORE.bookings=bk.data.map(mapBooking);
+    const pr=await SB.from('profiles').select('*');
+    const hv=await SB.from('host_verification').select('*');
+    const hvMap={}; (hv.data||[]).forEach(x=>hvMap[x.id]=x);
+    if(pr.data) STORE.profiles=pr.data.map(p=>mapProfile(p, hvMap[p.id]));
+  }catch(e){ console.warn('loadData failed', e); }
+}
+/* point the existing accessors at the live (Supabase) data */
+DB.experiences=()=>STORE.experiences;
+DB.bookings=()=>STORE.bookings;
+DB.users=()=>STORE.profiles;
+DB.saveExperiences=()=>{}; DB.saveBookings=()=>{}; DB.saveUsers=()=>{};
+
 /* ============================ I18N ============================ */
 const LANGS=[
   {code:'en',name:'English',flag:'🇬🇧'},
@@ -1061,29 +1086,14 @@ function seed(){
 }
 
 /* ============================ HELPERS ============================ */
-const me = ()=> AUTH_UID ? (DB.users().find(u=>u.id===AUTH_UID)||null) : null;
-/* Sync the Supabase session into a local user record so the rest of the app keeps working */
-async function syncUser(session){
-  if(!session || !session.user){ AUTH_UID=null; return; }
-  const u=session.user; AUTH_UID=u.id;
-  let prof=null;
-  try{ const r=await SB.from('profiles').select('*').eq('id',u.id).single(); prof=r.data; }catch(e){}
-  const users=DB.users(); let rec=users.find(x=>x.id===u.id);
-  if(!rec){
-    rec={id:u.id, name:(prof&&prof.name)||(u.user_metadata&&u.user_metadata.name)||'', email:u.email||'', role:(prof&&prof.role)||'traveler', createdAt:Date.now()};
-    users.push(rec);
-  } else {
-    rec.email=u.email||rec.email;
-    if(prof){ if(prof.name) rec.name=prof.name; if(prof.role) rec.role=prof.role; }
-  }
-  DB.saveUsers(users);
-}
+const me = ()=>{ if(!AUTH_UID) return null; const p=STORE.profiles.find(u=>u.id===AUTH_UID); if(!p) return null; p.email=SESSION_EMAIL; return p; };
+function syncSession(session){ if(session&&session.user){ AUTH_UID=session.user.id; SESSION_EMAIL=session.user.email||''; } else { AUTH_UID=null; SESSION_EMAIL=''; } }
 async function initAuth(){
   if(!SB) return;
   try{
     const {data}=await SB.auth.getSession();
-    await syncUser(data.session);
-    SB.auth.onAuthStateChange((_evt, sess)=>{ syncUser(sess).then(()=>{ if(typeof renderNav==='function') renderNav(); }); });
+    syncSession(data.session);
+    SB.auth.onAuthStateChange((_evt, sess)=>{ syncSession(sess); loadData().then(()=>{ if(typeof renderNav==='function') renderNav(); }); });
   }catch(e){ console.warn('auth init failed', e); }
 }
 const expById = id => DB.experiences().find(e=>e.id===id);
@@ -1549,7 +1559,8 @@ function openBookingFlow(e,date,guests){
   document.querySelectorAll('#modal .thumb[data-photo]').forEach(el=>{
     const src=el.getAttribute('data-photo'); const im=new Image(); im.onload=()=>el.style.backgroundImage='url('+src+')'; im.src=src;
   });
-  document.getElementById('confirmBtn').onclick=()=>{
+  const btn=document.getElementById('confirmBtn');
+  btn.onclick=async ()=>{
     let name,email;
     if(u && u.role!=='admin'){ name=u.name; email=u.email; }
     else{
@@ -1557,10 +1568,15 @@ function openBookingFlow(e,date,guests){
       email=document.getElementById('bcEmail').value.trim();
       if(!name||!/.+@.+\..+/.test(email)){ toast(t('guest_valid_toast'),'err'); return; }
     }
-    const b={id:uid(), codeStr:code(), expId:e.id, expTitle:e.title, hostId:e.hostId, userId:(u&&u.role!=='admin')?u.id:null,
-      customer:{name,email}, date, guests, subtotal:sub, commission:com, payout, status:'confirmed', createdAt:Date.now()};
-    const arr=DB.bookings(); arr.unshift(b); DB.saveBookings(arr);
-    showTicket(b,e);
+    if(!SB){ toast('Service indisponible, réessaie','err'); return; }
+    btn.disabled=true;
+    const codeStr=code();
+    const row={ code:codeStr, exp_id:e.id, exp_title:e.title, host_id:e.hostId||null, user_id:(u&&u.role!=='admin')?u.id:null,
+      customer_name:name, customer_email:email, date, guests, subtotal:sub, commission:com, payout, status:'confirmed' };
+    const {error}=await SB.from('bookings').insert(row);
+    if(error){ btn.disabled=false; toast(error.message||'Booking failed','err'); return; }
+    await loadData();
+    showTicket({codeStr, date, guests, subtotal:sub, hostId:e.hostId, expTitle:e.title}, e);
   };
 }
 function showTicket(b,e){
@@ -1621,7 +1637,7 @@ function bindAuth(){
       if(authMode==='login'){
         const {data,error}=await SB.auth.signInWithPassword({email,password:pass});
         if(error){ toast(t('auth_wrong_toast'),'err'); return; }
-        await syncUser(data.session);
+        syncSession(data.session); await loadData();
         const u=me(); toast(t('auth_signedin_toast',{name:(u&&u.name?u.name.split(' ')[0]:'')}));
         location.hash = (u&&u.role==='admin')?'#/admin':'#/dashboard';
       }else{
@@ -1629,7 +1645,7 @@ function bindAuth(){
         if(!name){ toast(t('auth_addname_toast'),'err'); return; }
         const {data,error}=await SB.auth.signUp({email,password:pass,options:{data:{name}}});
         if(error){ toast(error.message||t('auth_emailexists_toast'),'err'); return; }
-        if(data.session){ await syncUser(data.session); toast(t('auth_created_toast')); location.hash='#/dashboard'; }
+        if(data.session){ syncSession(data.session); await loadData(); toast(t('auth_created_toast')); location.hash='#/dashboard'; }
         else { toast(t('auth_check_email')); setAuth('login'); }
       }
     } finally { go.disabled=false; }
@@ -1846,37 +1862,30 @@ function validateWiz(){
 }
 function wizNext(){ if(!validateWiz()) return; if(wizStep<5){ wizStep++; router(); } }
 function wizBack(){ collectWiz(); if(wizStep>1){ wizStep--; router(); } }
-function wizSubmit(){
+async function wizSubmit(){
   if(!document.getElementById('w_agree').checked){ toast(t('accept_terms_toast'),'err'); return; }
-  const u=me();
-  const users=DB.users();
-  let host=u;
-  if(u){
-    // upgrade existing user to host
-    const idx=users.findIndex(x=>x.id===u.id);
-    users[idx].role='host';
-    users[idx].host=buildHostProfile();
-    host=users[idx];
-  }else{
-    if(users.some(x=>x.email.toLowerCase()===wizData.email.toLowerCase())){ toast(t('email_taken_toast'),'err'); return; }
-    host={id:uid(),name:wizData.name,email:wizData.email,pass:wizData.pass,role:'host',createdAt:Date.now(),host:buildHostProfile()};
-    users.push(host);
-  }
-  DB.saveUsers(users);
-  DB.setSession(host.id);
-  // create pending experience
+  const u=me(); if(!u){ location.hash='#/auth'; return; }
+  if(!SB){ toast('Service indisponible, réessaie','err'); return; }
+  const btn=document.getElementById('wizSubmitBtn'); if(btn) btn.disabled=true;
+  const docs=[wizData.docs.id,wizData.docs.license,wizData.docs.insurance].filter(Boolean);
+  // 1) become a host
+  const up=await SB.from('profiles').update({ role:'host', host_status:'pending', business:wizData.business, base:wizData.base, about:wizData.about, languages:wizData.languages, category:wizData.category, years:wizData.years }).eq('id',u.id);
+  if(up.error){ if(btn) btn.disabled=false; toast(up.error.message||'Error','err'); return; }
+  // 2) verification details (private)
+  await SB.from('host_verification').upsert({ id:u.id, nif:wizData.nif, phone:wizData.phone, docs }, {onConflict:'id'});
+  // 3) first listing (pending review)
   const e=wizData.exp;
-  const exp={id:uid(),hostId:host.id,hostName:host.name,title:e.title,category:e.category,region:e.region,location:e.location,
-    price:+e.price,durationHrs:+e.durationHrs,groupMax:+e.groupMax,summary:e.summary,
-    desc:[e.summary,'More details will be added by '+host.name.split(' ')[0]+' before launch.'],
-    inc:['Local guide','Safety briefing'],img:e.img||IMG('1505228395891-9a51e7e86bf6'),gallery:[],
-    rating:'0.00',reviews:0,status:'pending',createdAt:Date.now()};
-  const exps=DB.experiences(); exps.unshift(exp); DB.saveExperiences(exps);
-  // reset wizard
-  const hostName=host.name;
-  wizStep=1; wizData={ name:'',email:'',pass:'',business:'',nif:'',phone:'',base:'',about:'',languages:'',category:'ocean',years:'',
+  const exp={ host_id:u.id, host_name:u.name, title:e.title, category:e.category, region:e.region, location:e.location,
+    price:+e.price, duration_hrs:+e.durationHrs, group_max:+e.groupMax, summary:e.summary,
+    descr:[e.summary,'More details will be added by '+u.name.split(' ')[0]+' before launch.'],
+    inc:['Local guide','Safety briefing'], img:e.img||'img/coastal-cliff.jpg', gallery:[], status:'pending' };
+  const ins=await SB.from('experiences').insert(exp);
+  if(ins.error){ if(btn) btn.disabled=false; toast(ins.error.message||'Error','err'); return; }
+  await loadData();
+  const hostName=u.name;
+  wizStep=1; wizData={ name:u.name,email:u.email,pass:'',business:'',nif:'',phone:'',base:'',about:'',languages:'',category:'ocean',years:'',
     docs:{id:null,license:null,insurance:null},
-    exp:{title:'',category:'ocean',region:'Madeira',location:'',price:'',durationHrs:'',groupMax:'',summary:'',img:''} };
+    exp:{title:'',category:'ocean',region:'Funchal',location:'',price:'',durationHrs:'',groupMax:'',summary:'',img:''} };
   openModal(`
     <div class="modal-head"><h3>${t('app_submitted_title')}</h3><span class="x" onclick="closeModal()">×</span></div>
     <div class="modal-body" style="text-align:center">
@@ -2014,14 +2023,19 @@ function openNewListing(){
       <button class="btn btn-primary btn-block btn-lg" id="nl_go">${t('submit_review')}</button>
       <p class="bk-note">${t('nl_note')}</p>
     </div>`);
-  document.getElementById('nl_go').onclick=()=>{
+  const nlBtn=document.getElementById('nl_go');
+  nlBtn.onclick=async ()=>{
     const g=id=>document.getElementById(id).value.trim();
     const title=g('nl_title'),summary=g('nl_summary'),loc=g('nl_loc'),price=g('nl_price'),dur=g('nl_dur'),max=g('nl_max');
     if(!title||!summary||!loc||!price||!dur||!max){ toast(t('fill_all_toast'),'err'); return; }
-    const exp={id:uid(),hostId:u.id,hostName:u.name,title,category:g('nl_cat'),region:g('nl_region'),location:loc,
-      price:+price,durationHrs:+dur,groupMax:+max,summary,desc:[summary],inc:['Local guide','Safety briefing'],
-      img:IMG('1505228395891-9a51e7e86bf6'),gallery:[],rating:'0.00',reviews:0,status:'pending',createdAt:Date.now()};
-    const arr=DB.experiences(); arr.unshift(exp); DB.saveExperiences(arr);
+    if(!SB){ toast('Service indisponible, réessaie','err'); return; }
+    nlBtn.disabled=true;
+    const exp={ host_id:u.id, host_name:u.name, title, category:g('nl_cat'), region:g('nl_region'), location:loc,
+      price:+price, duration_hrs:+dur, group_max:+max, summary, descr:[summary], inc:['Local guide','Safety briefing'],
+      img:'img/coastal-cliff.jpg', gallery:[], status:'pending' };
+    const ins=await SB.from('experiences').insert(exp);
+    if(ins.error){ nlBtn.disabled=false; toast(ins.error.message||'Error','err'); return; }
+    await loadData();
     closeModal(); toast(t('listing_submitted_toast')); dashTab='listings'; router();
   };
 }
@@ -2086,15 +2100,17 @@ function hostAppCard(h,verified){
     <div class="right"><div class="acts">${acts}</div></div>
   </div>`;
 }
-function verifyHost(id){
-  const users=DB.users(); const i=users.findIndex(u=>u.id===id);
-  if(i<0) return; users[i].host.status='verified'; DB.saveUsers(users);
-  toast(t('verified_toast',{name:users[i].name.split(' ')[0]})); router();
+async function verifyHost(id){
+  const u=DB.users().find(x=>x.id===id); if(!SB) return;
+  const {error}=await SB.from('profiles').update({host_status:'verified'}).eq('id',id);
+  if(error){ toast(error.message,'err'); return; }
+  await loadData(); toast(t('verified_toast',{name:(u&&u.name?u.name.split(' ')[0]:'')})); router();
 }
-function rejectHost(id){
-  const users=DB.users(); const i=users.findIndex(u=>u.id===id);
-  if(i<0) return; users[i].host.status='rejected'; DB.saveUsers(users);
-  toast(t('rejected_toast'),'err'); router();
+async function rejectHost(id){
+  if(!SB) return;
+  const {error}=await SB.from('profiles').update({host_status:'rejected'}).eq('id',id);
+  if(error){ toast(error.message,'err'); return; }
+  await loadData(); toast(t('rejected_toast'),'err'); router();
 }
 function listingReviewCard(e){
   const host=DB.users().find(u=>u.id===e.hostId);
@@ -2114,16 +2130,19 @@ function listingReviewCard(e){
     </div></div>
   </div>`;
 }
-function approveExp(id){
-  const host=(()=>{ const e=expById(id); return e?DB.users().find(u=>u.id===e.hostId):null; })();
+async function approveExp(id){
+  const e=expById(id); const host=e?DB.users().find(u=>u.id===e.hostId):null;
   if(!host||!host.host||host.host.status!=='verified'){ toast(t('verify_before_toast'),'err'); return; }
-  const exps=DB.experiences(); const i=exps.findIndex(e=>e.id===id);
-  exps[i].status='live'; if(exps[i].reviews===0){ exps[i].rating=(4.7+Math.random()*0.3).toFixed(2); }
-  DB.saveExperiences(exps); toast(t('listing_live_toast')); router();
+  if(!SB) return;
+  const {error}=await SB.from('experiences').update({status:'live'}).eq('id',id);
+  if(error){ toast(error.message,'err'); return; }
+  await loadData(); toast(t('listing_live_toast')); router();
 }
-function rejectExp(id){
-  const exps=DB.experiences(); const i=exps.findIndex(e=>e.id===id);
-  exps[i].status='rejected'; DB.saveExperiences(exps); toast(t('listing_rejected_toast'),'err'); router();
+async function rejectExp(id){
+  if(!SB) return;
+  const {error}=await SB.from('experiences').update({status:'rejected'}).eq('id',id);
+  if(error){ toast(error.message,'err'); return; }
+  await loadData(); toast(t('listing_rejected_toast'),'err'); router();
 }
 function adminBookingRow(b){
   const e=expById(b.expId); const c=e?catOf(e.category):CATS[0];
@@ -2171,10 +2190,10 @@ function mountWizNav(){
 }
 
 /* ============================ BOOT ============================ */
-seed();
 document.documentElement.lang=CURRENT_LANG;
 if(!location.hash) location.hash='#/';
-(async()=>{ await initAuth(); router(); })();
+router(); // first paint (may be empty for a beat)
+(async()=>{ await initAuth(); await loadData(); router(); })();
 </script>
 </body>
 </html>

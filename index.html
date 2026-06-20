@@ -142,7 +142,9 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
 .hero-go{border-radius:12px;padding:0 26px;align-self:stretch;white-space:nowrap;font-size:15px}
 /* activity autocomplete */
 .ac-field{position:relative}
-.ac-menu{position:absolute;left:0;top:calc(100% + 12px);min-width:320px;max-width:420px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);padding:6px;max-height:340px;overflow:auto;z-index:60;display:none}
+.ac-menu{position:absolute;left:0;top:calc(100% + 12px);min-width:320px;max-width:420px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);padding:6px;max-height:248px;overflow-y:auto;overscroll-behavior:contain;z-index:60;display:none}
+.ac-menu::-webkit-scrollbar{width:8px}
+.ac-menu::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:8px}
 .ac-menu.on{display:block}
 .ac-head{font-size:10.5px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;padding:9px 11px 5px}
 .ac-item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--ink)}
@@ -1351,7 +1353,6 @@ function bindHome(){
     const f=qEl.value.toLowerCase().trim();
     let list=acSuggestions();
     if(f) list=list.filter(it=>it.label.toLowerCase().includes(f));
-    list=list.slice(0,3);
     if(!list.length){ hideAC(); return; }
     const head = f ? '' : '<div class="ac-head">'+t('feat_eyebrow')+'</div>';
     menu.innerHTML = head + list.map((it,i)=>

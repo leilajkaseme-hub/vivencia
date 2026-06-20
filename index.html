@@ -140,6 +140,15 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
 .hero-lede{color:rgba(255,255,255,.95);margin:18px auto 0;max-width:48ch;text-shadow:0 1px 16px rgba(0,0,0,.45)}
 .hero-search{margin:34px auto 0;max-width:880px;text-align:left;box-shadow:var(--shadow-lg)}
 .hero-go{border-radius:12px;padding:0 26px;align-self:stretch;white-space:nowrap;font-size:15px}
+/* activity autocomplete */
+.ac-field{position:relative}
+.ac-menu{position:absolute;left:0;top:calc(100% + 12px);min-width:320px;max-width:420px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);padding:6px;max-height:340px;overflow:auto;z-index:60;display:none}
+.ac-menu.on{display:block}
+.ac-head{font-size:10.5px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;padding:9px 11px 5px}
+.ac-item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--ink)}
+.ac-item:hover,.ac-item.active{background:var(--surface)}
+.ac-item .ic{width:30px;height:30px;border-radius:8px;background:var(--ocean-soft);display:grid;place-items:center;font-size:15px;flex-shrink:0}
+.ac-item .sub{color:var(--faint);font-size:12px;font-weight:400;margin-left:auto;white-space:nowrap}
 .hero-trust{justify-content:center;margin-top:26px;gap:10px}
 .hero-trust .t{color:#fff;font-weight:600;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:9px 16px;border-radius:980px;border:1px solid rgba(255,255,255,.22);text-shadow:0 1px 6px rgba(0,0,0,.4)}
 .hero-trust .t b{color:#fff;font-weight:700}
@@ -1208,13 +1217,14 @@ function expCard(e){
 }
 
 /* ============================ HOME ============================ */
-/* examples shown in the hero activity search (live titles + categories + regions) */
-function searchSuggestions(){
-  const set=new Set();
-  DB.experiences().filter(e=>e.status==='live').forEach(e=>set.add(e.title));
-  CATS.forEach(c=>set.add(catLabel(c)));
-  REGIONS.forEach(r=>set.add(r));
-  return [...set];
+/* suggestions for the hero activity search */
+function acSuggestions(){
+  const live=DB.experiences().filter(e=>e.status==='live');
+  const items=[];
+  live.forEach(e=>items.push({label:e.title, ic:catOf(e.category).ic, sub:e.region, group:'exp'}));
+  CATS.forEach(c=>items.push({label:catLabel(c), ic:c.ic, sub:t('composer_exp'), group:'cat'}));
+  REGIONS.forEach(r=>items.push({label:r, ic:'📍', sub:t('composer_where'), group:'region'}));
+  return items;
 }
 function viewHome(){
   const live=DB.experiences().filter(e=>e.status==='live');
@@ -1230,9 +1240,9 @@ function viewHome(){
       <h1 class="h-xl hero-h1">${t('hero_title')}</h1>
       <p class="lede hero-lede">${t('hero_lede')}</p>
       <div class="composer hero-search" id="homeComposer">
-        <div class="field"><label>${t('search_what')}</label>
-          <input id="hsQ" list="actSuggest" autocomplete="off" placeholder="${t('search_what_ph')}" />
-          <datalist id="actSuggest">${searchSuggestions().map(s=>'<option value="'+escapeHtml(s)+'"></option>').join('')}</datalist></div>
+        <div class="field ac-field"><label>${t('search_what')}</label>
+          <input id="hsQ" autocomplete="off" placeholder="${t('search_what_ph')}" />
+          <div class="ac-menu" id="acMenu"></div></div>
         <div class="sep"></div>
         <div class="field"><label>${t('search_when')}</label>
           <input id="hsDate" type="date" min="${new Date().toISOString().slice(0,10)}" /></div>
@@ -1293,8 +1303,10 @@ afterRender._home=()=>{};
 const origRouter=router;
 function bindHome(){
   const go=document.getElementById('hsGo'); if(!go) return;
+  const qEl=document.getElementById('hsQ');
+  const menu=document.getElementById('acMenu');
   const run=()=>{
-    const q=document.getElementById('hsQ').value.trim();
+    const q=qEl.value.trim();
     const d=document.getElementById('hsDate').value;
     const tr=document.getElementById('hsTravelers').value;
     const p=new URLSearchParams();
@@ -1303,7 +1315,43 @@ function bindHome(){
     location.hash='#/explore'+(qs?('?'+qs):'');
   };
   go.onclick=run;
-  document.getElementById('hsQ').addEventListener('keydown',e=>{ if(e.key==='Enter') run(); });
+
+  // ---- activity autocomplete ----
+  const hideAC=()=>{ if(menu){ menu.classList.remove('on'); } };
+  const renderAC=()=>{
+    if(!menu) return;
+    const f=qEl.value.toLowerCase().trim();
+    let list=acSuggestions();
+    if(f) list=list.filter(it=>it.label.toLowerCase().includes(f));
+    list=list.slice(0,8);
+    if(!list.length){ hideAC(); return; }
+    const head = f ? '' : '<div class="ac-head">'+t('feat_eyebrow')+'</div>';
+    menu.innerHTML = head + list.map((it,i)=>
+      '<div class="ac-item'+(f&&i===0?' active':'')+'" data-val="'+escapeHtml(it.label)+'">'
+      +'<span class="ic">'+it.ic+'</span><span>'+escapeHtml(it.label)+'</span>'
+      +'<span class="sub">'+escapeHtml(it.sub)+'</span></div>').join('');
+    menu.querySelectorAll('.ac-item').forEach(el=>{
+      el.addEventListener('mousedown',ev=>{ ev.preventDefault(); qEl.value=el.getAttribute('data-val'); hideAC(); run(); });
+    });
+    menu.classList.add('on');
+  };
+  const move=(dir)=>{
+    if(!menu||!menu.classList.contains('on')) return;
+    const items=[...menu.querySelectorAll('.ac-item')]; if(!items.length) return;
+    let idx=items.findIndex(el=>el.classList.contains('active'));
+    if(idx>=0) items[idx].classList.remove('active');
+    idx=(idx+dir+items.length)%items.length;
+    items[idx].classList.add('active'); items[idx].scrollIntoView({block:'nearest'});
+  };
+  qEl.addEventListener('focus',renderAC);
+  qEl.addEventListener('input',renderAC);
+  qEl.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'){ e.preventDefault(); move(1); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); move(-1); }
+    else if(e.key==='Enter'){ const act=menu&&menu.querySelector('.ac-item.active'); if(act){ qEl.value=act.getAttribute('data-val'); } hideAC(); run(); }
+    else if(e.key==='Escape'){ hideAC(); }
+  });
+  document.addEventListener('click',e=>{ if(!e.target.closest('.ac-field')) hideAC(); });
 }
 
 /* ============================ EXPLORE ============================ */

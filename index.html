@@ -956,7 +956,7 @@ const HERO_VIDEO = 'hero.mp4';
 const HERO_POSTER = 'hero-poster.jpg';
 
 function seed(){
-  if(DB.r('seed_version',0) >= 3) return;
+  if(DB.r('seed_version',0) >= 4) return;
   const adminId=uid(), h1=uid(), h2=uid(), h3=uid(), trav=uid();
   const users=[
     {id:adminId, name:'Admin', email:'admin@vivencia.pt', pass:'admin', role:'admin', createdAt:Date.now()},
@@ -970,53 +970,53 @@ function seed(){
   ];
   const ex = (hostId,hostName,o)=>Object.assign({id:uid(),hostId,hostName,status:'live',rating:(4.6+Math.random()*0.4).toFixed(2),reviews:Math.floor(40+Math.random()*220),createdAt:Date.now()-Math.random()*4e8,gallery:[]},o);
   const experiences=[
-    ex(h1,'Tiago Andrade',{title:'Private Sunset Yacht Cruise', category:'ocean', region:'Funchal', location:'Funchal Marina', price:95, durationHrs:3, groupMax:8, img:IMG('1544551763-46a013bb70d5'),
+    ex(h1,'Tiago Andrade',{title:'Private Sunset Yacht Cruise', category:'ocean', region:'Funchal', location:'Funchal Marina', price:95, durationHrs:3, groupMax:8, img:'img/yacht-sunset.jpg',
       summary:'Sail the south coast at golden hour with welcome drinks and a swim stop in a hidden bay.',
       desc:['Step aboard a private sailing yacht as the light turns over the Atlantic. We leave Funchal Marina, hug the cliffs toward Câmara de Lobos and drop anchor in a calm bay where you can swim straight off the deck.','Madeira poncha and local snacks are served as the sun sets behind the headland. This is a small group sailing, never more than eight guests, so it feels like your own boat for the evening.'],
       inc:['Skipper and crew','Welcome poncha and snacks','Snorkel gear','Towels on board','Hotel pickup in central Funchal'],
-      gallery:[IMG('1502933691298-84fc14542831'),IMG('1507525428034-b723cf961d3e')]}),
-    ex(h2,'Inês Carvalho',{title:'Levada das 25 Fontes Guided Walk', category:'nature', region:'Calheta', location:'Rabaçal', price:48, durationHrs:5, groupMax:10, img:IMG('1502082553048-f009c37129b9'),
+      gallery:['img/yacht-cruise.jpg','img/coast-turquoise.jpg']}),
+    ex(h2,'Inês Carvalho',{title:'Levada das 25 Fontes Guided Walk', category:'nature', region:'Calheta', location:'Rabaçal', price:48, durationHrs:5, groupMax:10, img:'img/green-gorge.jpg',
       summary:'Walk the laurel forest to a waterfall amphitheatre fed by twenty five springs.',
       desc:['One of the most beautiful trails on the island. We follow a centuries old water channel through dense laurissilva, a forest so rare it carries UNESCO protection.','The path opens onto a natural amphitheatre where dozens of springs pour down the rock face. Your guide reads the landscape for you, the endemic plants, the birds, the way the water shaped the island.'],
       inc:['Certified mountain guide','Transfer to and from the trailhead','Walking poles','Light snack and water','Group photos'],
-      gallery:[IMG('1441974231531-c6227db76b6e'),IMG('1469474968028-56623f02e42e')]}),
+      gallery:['img/seixal-cliff.jpg','img/coastal-cliff.jpg']}),
     ex(h3,'Rui Bettencourt',{title:'Madeira Wine Cellar Tasting', category:'food', region:'Funchal', location:'Funchal Old Town', price:65, durationHrs:2.5, groupMax:12, img:IMG('1510812431401-41d2bd2722f3'),
       summary:'Six pours of true Madeira wine in a historic Funchal lodge, with a guide who actually makes it.',
       desc:['Step into a centuries old lodge in the heart of Funchal where Madeira wine ages slowly under the island sun. We taste six expressions, from crisp dry Sercial to a deep sweet Malmsey, each one explained without the usual jargon.','You will learn how the volcanic soil, the grape varieties and the estufagem ageing build that unmistakable flavour. Local cheese and honey cake are paired throughout.'],
       inc:['Six Madeira wine tasting','Local cheese and honey cake','Lodge tour','Expert sommelier host'],
       gallery:[IMG('1506377247377-2a5b3b417ebb'),IMG('1474722883778-792e7990302f')]}),
-    ex(h1,'Tiago Andrade',{title:'Dolphin & Whale Watching by Catamaran', category:'ocean', region:'Calheta', location:'Calheta', price:58, durationHrs:3, groupMax:14, img:IMG('1568430462989-44163eb1752f'),
+    ex(h1,'Tiago Andrade',{title:'Dolphin & Whale Watching by Catamaran', category:'ocean', region:'Calheta', location:'Calheta', price:58, durationHrs:3, groupMax:14, img:'img/catamaran.jpg',
       summary:'Head into deep water with a marine biologist to find resident dolphins and whales.',
       desc:['Madeira sits on a migration corridor, which means resident pods of dolphins and seasonal whales. We sail from Calheta with a marine biologist on board who tracks them responsibly.','You keep a respectful distance, the engines go quiet, and you watch them move through clear blue water. Sightings are common all year.'],
       inc:['Marine biologist guide','Catamaran with sun deck','Drinks on board','Sighting briefing'],
-      gallery:[IMG('1497436072909-60f360e1d4b1')]}),
+      gallery:['img/coast-turquoise.jpg','img/yacht-cruise.jpg']}),
     ex(h3,'Rui Bettencourt',{title:'Funchal Old Town Food & Poncha Crawl', category:'food', region:'Funchal', location:'Zona Velha', price:54, durationHrs:3.5, groupMax:10, img:IMG('1555881400-74d7acaacd8b'),
       summary:'Eight tastings through the old town, from bolo do caco to espetada to a closing poncha.',
       desc:['We wind through the Zona Velha, the oldest quarter of Funchal, stopping at the places locals actually queue for. Warm bolo do caco with garlic butter, fresh limpets, skewered espetada straight off the laurel stick.','Between bites you get the story of the neighbourhood, the painted doors, the market and the fishermen. We finish with a proper poncha in a tiny back street bar.'],
       inc:['Eight food and drink tastings','Local guide','All gratuities','Small group'],
       gallery:[IMG('1513735492246-483525079686')]}),
-    ex(h2,'Inês Carvalho',{title:'Pico do Arieiro Sunrise Hike', category:'adventure', region:'Santana', location:'Pico do Arieiro', price:72, durationHrs:6, groupMax:8, img:IMG('1464822759023-fed622ff2c3b'),
+    ex(h2,'Inês Carvalho',{title:'Pico do Arieiro Sunrise Hike', category:'adventure', region:'Santana', location:'Pico do Arieiro', price:72, durationHrs:6, groupMax:8, img:'img/peaks.jpg',
       summary:'Start before dawn on the third highest peak and walk the ridge above the clouds.',
       desc:['We meet in the dark and drive to the summit for first light. From 1818 metres you stand above a sea of cloud as the sun breaks over the eastern ridge.','From there we take the stairway ridge toward Pico Ruivo, one of the great alpine walks in Europe. Steep in places, fully guided, unforgettable.'],
       inc:['Pre dawn pickup','Mountain guide','Headlamp and poles','Breakfast at the summit','Safety equipment'],
-      gallery:[IMG('1454496522488-7a8e488e8606')]}),
-    ex(h3,'Rui Bettencourt',{title:'Monte, Toboggan & Funchal Heritage Day', category:'culture', region:'Funchal', location:'Monte', price:78, durationHrs:6, groupMax:6, img:IMG('1558102822-da570eb11306'),
+      gallery:['img/green-gorge.jpg','img/seixal-cliff.jpg']}),
+    ex(h3,'Rui Bettencourt',{title:'Monte, Toboggan & Funchal Heritage Day', category:'culture', region:'Funchal', location:'Monte', price:78, durationHrs:6, groupMax:6, img:'img/coastal-town.jpg',
       summary:'Ride the cable car to Monte, take the wicker toboggan down, then walk old Funchal with a local historian.',
       desc:['We climb high above the bay in the Funchal cable car to the village of Monte, with its baroque church and tropical gardens. Then the famous carro de cesto, the wicker toboggan steered downhill by two carreiros in straw hats and white linen.','Back in the city a local historian walks you through the cathedral, the old streets and the painted doors of the Zona Velha, the kings, the trade and the stories behind it all.'],
       inc:['Private local historian','Cable car ticket','Toboggan ride','Air conditioned transport','Bottled water'],
-      gallery:[IMG('1597212618440-806262de4f6b')]}),
-    ex(h1,'Tiago Andrade',{title:'Coastal Kayak & Sea Cave Tour', category:'adventure', region:'Funchal', location:'Garajau', price:42, durationHrs:2, groupMax:8, img:IMG('1502680390469-be75c86b636f'),
+      gallery:['img/pier.jpg','img/natural-pool.jpg']}),
+    ex(h1,'Tiago Andrade',{title:'Coastal Kayak & Sea Cave Tour', category:'adventure', region:'Funchal', location:'Garajau', price:42, durationHrs:2, groupMax:8, img:'img/coastal-cliff.jpg',
       summary:'Paddle into volcanic sea caves inside a protected marine reserve.',
       desc:['Launch from the Garajau reserve and paddle along black volcanic cliffs into hidden sea caves. The water here is protected, so the marine life is rich and the visibility is excellent.','No experience needed, full briefing included, and a snorkel stop over the reef before you head back.'],
       inc:['Kayak and full gear','Guide and safety brief','Snorkel stop','Waterproof bag'],
-      gallery:[IMG('1544551763-46a013bb70d5')]}),
+      gallery:['img/coast-turquoise.jpg','img/natural-pool.jpg']}),
   ];
   const bk=[
     {id:uid(), codeStr:code(), expId:experiences[0].id, expTitle:experiences[0].title, hostId:h1, userId:trav, customer:{name:'Mara Lopes',email:'mara@traveler.pt'}, date:'2026-07-04', guests:2, subtotal:190, commission:28.5, payout:161.5, status:'confirmed', createdAt:Date.now()-2e8},
     {id:uid(), codeStr:code(), expId:experiences[2].id, expTitle:experiences[2].title, hostId:h3, userId:null, customer:{name:'Lukas Berg',email:'lukas@example.de'}, date:'2026-06-30', guests:4, subtotal:260, commission:39, payout:221, status:'confirmed', createdAt:Date.now()-1e8},
   ];
   DB.saveUsers(users); DB.saveExperiences(experiences); DB.saveBookings(bk);
-  DB.w('seed_version',3);
+  DB.w('seed_version',4);
 }
 
 /* ============================ HELPERS ============================ */

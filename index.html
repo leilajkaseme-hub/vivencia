@@ -951,9 +951,9 @@ const CATS = [
 const REGIONS = ['Funchal','Câmara de Lobos','Calheta','Santana','Machico','Porto Santo'];
 const catOf = id => CATS.find(c=>c.id===id) || CATS[0];
 const IMG = id => 'https://images.unsplash.com/photo-'+id+'?auto=format&fit=crop&w=1000&q=70';
-/* Hero background video — swap HERO_VIDEO for your own Madeira drone footage when ready */
-const HERO_VIDEO = 'https://videos.pexels.com/video-files/2169880/2169880-uhd_2560_1440_30fps.mp4';
-const HERO_POSTER = 'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?auto=format&fit=crop&w=1920&q=75';
+/* Hero background video — local Madeira FPV drone footage (swap these files to change it) */
+const HERO_VIDEO = 'hero.mp4';
+const HERO_POSTER = 'hero-poster.jpg';
 
 function seed(){
   if(DB.r('seed_version',0) >= 3) return;

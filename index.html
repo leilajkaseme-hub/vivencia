@@ -149,9 +149,9 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
 .ac-item:hover,.ac-item.active{background:var(--surface)}
 .ac-item .ic{width:30px;height:30px;border-radius:8px;background:var(--ocean-soft);display:grid;place-items:center;font-size:15px;flex-shrink:0}
 .ac-item .sub{color:var(--faint);font-size:12px;font-weight:400;margin-left:auto;white-space:nowrap}
-.hero-trust{justify-content:center;margin-top:26px;gap:10px}
-.hero-trust .t{color:#fff;font-weight:600;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:9px 16px;border-radius:980px;border:1px solid rgba(255,255,255,.22);text-shadow:0 1px 6px rgba(0,0,0,.4)}
-.hero-trust .t b{color:#fff;font-weight:700}
+.hero .hero-trust{justify-content:center;margin-top:26px;gap:10px}
+.hero .hero-trust .t{color:#fff;font-weight:600;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:9px 16px;border-radius:980px;border:1px solid rgba(255,255,255,.22);text-shadow:0 1px 6px rgba(0,0,0,.4)}
+.hero .hero-trust .t b{color:#fff!important;font-weight:700}
 
 /* trust row */
 .trust{display:flex;gap:28px;margin-top:26px;flex-wrap:wrap}
@@ -520,6 +520,7 @@ en:{
   search_what:`Activity`, search_what_ph:`Search places or activities`, search_when:`When`, search_who:`Travelers`, traveler_one:`traveler`, travelers_many:`travelers`,
   trust_verified:`✓ <b>Verified hosts</b> only`, trust_rating:`★ <b>4.8</b> average rating`, trust_cancel:`⚡ Free cancellation`,
   feat_eyebrow:`Loved right now`, feat_title:`Featured experiences`, feat_seeall:`See all experiences →`,
+  mustdo_eyebrow:`Highly requested`, mustdo_title:`Must-do in Madeira`,
   how_eyebrow:`Simple by design`, how_title:`How Vivência works`,
   how1_t:`Find your experience`, how1_p:`Browse by region or by the kind of day you want. Every listing shows the real host, the group size and an honest price.`,
   how2_t:`Book in seconds`, how2_p:`Reserve as a guest or with an account. Pick your date, confirm your group, done. Free cancellation on most experiences.`,
@@ -631,6 +632,7 @@ pt:{
   search_what:`Atividade`, search_what_ph:`Locais ou atividades`, search_when:`Quando`, search_who:`Viajantes`, traveler_one:`viajante`, travelers_many:`viajantes`,
   trust_verified:`✓ Apenas <b>anfitriões verificados</b>`, trust_rating:`★ <b>4.8</b> de avaliação média`, trust_cancel:`⚡ Cancelamento gratuito`,
   feat_eyebrow:`Em destaque agora`, feat_title:`Experiências em destaque`, feat_seeall:`Ver todas as experiências →`,
+  mustdo_eyebrow:`Muito procurado`, mustdo_title:`A não perder na Madeira`,
   how_eyebrow:`Simples por natureza`, how_title:`Como funciona a Vivência`,
   how1_t:`Encontre a sua experiência`, how1_p:`Procure por região ou pelo tipo de dia que quer. Cada anúncio mostra o anfitrião real, o tamanho do grupo e um preço honesto.`,
   how2_t:`Reserve em segundos`, how2_p:`Reserve como convidado ou com conta. Escolha a data, confirme o grupo, pronto. Cancelamento gratuito na maioria das experiências.`,
@@ -742,6 +744,7 @@ fr:{
   search_what:`Activité`, search_what_ph:`Lieux ou activités`, search_when:`Quand`, search_who:`Voyageurs`, traveler_one:`voyageur`, travelers_many:`voyageurs`,
   trust_verified:`✓ <b>Hôtes vérifiés</b> uniquement`, trust_rating:`★ <b>4.8</b> de note moyenne`, trust_cancel:`⚡ Annulation gratuite`,
   feat_eyebrow:`Coups de cœur du moment`, feat_title:`Expériences à la une`, feat_seeall:`Voir toutes les expériences →`,
+  mustdo_eyebrow:`Très demandé`, mustdo_title:`À faire absolument à Madère`,
   how_eyebrow:`Simple par conception`, how_title:`Comment fonctionne Vivência`,
   how1_t:`Trouvez votre expérience`, how1_p:`Parcourez par région ou par type de journée. Chaque annonce indique l'hôte réel, la taille du groupe et un prix honnête.`,
   how2_t:`Réservez en quelques secondes`, how2_p:`Réservez en tant qu'invité ou avec un compte. Choisissez votre date, confirmez votre groupe, c'est fait. Annulation gratuite sur la plupart des expériences.`,
@@ -853,6 +856,7 @@ es:{
   search_what:`Actividad`, search_what_ph:`Lugares o actividades`, search_when:`Cuándo`, search_who:`Viajeros`, traveler_one:`viajero`, travelers_many:`viajeros`,
   trust_verified:`✓ Solo <b>anfitriones verificados</b>`, trust_rating:`★ <b>4.8</b> de valoración media`, trust_cancel:`⚡ Cancelación gratuita`,
   feat_eyebrow:`Lo más querido ahora`, feat_title:`Experiencias destacadas`, feat_seeall:`Ver todas las experiencias →`,
+  mustdo_eyebrow:`Muy solicitado`, mustdo_title:`Imprescindible en Madeira`,
   how_eyebrow:`Simple por diseño`, how_title:`Cómo funciona Vivência`,
   how1_t:`Encuentra tu experiencia`, how1_p:`Explora por región o por el tipo de día que quieras. Cada anuncio muestra el anfitrión real, el tamaño del grupo y un precio honesto.`,
   how2_t:`Reserva en segundos`, how2_p:`Reserva como invitado o con cuenta. Elige tu fecha, confirma tu grupo, listo. Cancelación gratuita en la mayoría de experiencias.`,
@@ -976,7 +980,7 @@ const HERO_VIDEO = 'hero.mp4';
 const HERO_POSTER = 'hero-poster.jpg';
 
 function seed(){
-  if(DB.r('seed_version',0) >= 4) return;
+  if(DB.r('seed_version',0) >= 5) return;
   const adminId=uid(), h1=uid(), h2=uid(), h3=uid(), trav=uid();
   const users=[
     {id:adminId, name:'Admin', email:'admin@vivencia.pt', pass:'admin', role:'admin', createdAt:Date.now()},
@@ -1030,13 +1034,28 @@ function seed(){
       desc:['Launch from the Garajau reserve and paddle along black volcanic cliffs into hidden sea caves. The water here is protected, so the marine life is rich and the visibility is excellent.','No experience needed, full briefing included, and a snorkel stop over the reef before you head back.'],
       inc:['Kayak and full gear','Guide and safety brief','Snorkel stop','Waterproof bag'],
       gallery:['img/coast-turquoise.jpg','img/natural-pool.jpg']}),
+    ex(h1,'Tiago Andrade',{title:'Private Boat Tour & Dolphin Safari', category:'ocean', region:'Funchal', location:'Funchal Marina', price:165, durationHrs:3, groupMax:8, img:'img/catamaran.jpg', featured:true,
+      summary:'Your own private boat to find dolphins and whales, with swim stops in turquoise water.',
+      desc:['Charter the whole boat for your group and head out with a skipper who knows exactly where the resident pods feed. The engines go quiet as you watch dolphins, and seasonal whales, move through clear Atlantic water.','We anchor in a calm bay for a swim and a snorkel, with drinks and Madeira poncha on board. Fully private, fully flexible, it is your afternoon on the water.'],
+      inc:['Private boat and skipper','Dolphin and whale spotting','Swim and snorkel stop','Drinks and poncha','Hotel pickup in central Funchal'],
+      gallery:['img/coast-turquoise.jpg','img/yacht-cruise.jpg']}),
+    ex(h2,'Inês Carvalho',{title:'4x4 Jeep Safari: Peaks & the Wild West', category:'adventure', region:'Calheta', location:'Funchal (pickup)', price:110, durationHrs:7, groupMax:6, img:'img/peaks.jpg', featured:true,
+      summary:'Off-road across the mountains, the laurel forest and the dramatic northwest coast.',
+      desc:['A full day off the beaten track in a 4x4. We climb to the high peaks for views above the clouds, cross the ancient laurel forest and drop down to the wild northwest, with stops at viewpoints most tours never reach.','Your guide handles the driving and the stories, the geology, the legends, the best photo spots, while you just take it in. Lunch in a mountain village is included.'],
+      inc:['Private 4x4 and driver-guide','Hotel pickup and drop-off','Mountain village lunch','Viewpoints and short walks','Water and snacks'],
+      gallery:['img/green-gorge.jpg','img/seixal-cliff.jpg']}),
+    ex(h1,'Tiago Andrade',{title:'Private Sunset Catamaran & Swim', category:'ocean', region:'Funchal', location:'Funchal Marina', price:130, durationHrs:3, groupMax:10, img:'img/yacht-sunset.jpg', featured:true,
+      summary:'Charter a catamaran for golden hour, with a swim stop and drinks as the sun goes down.',
+      desc:['Step aboard a spacious catamaran reserved just for your group as the light turns gold over the Atlantic. We cruise the south coast and drop anchor in a quiet bay where you swim straight off the deck.','Sparkling wine, poncha and snacks are served while the sun sinks behind the headland. Smooth, private and unforgettable.'],
+      inc:['Private catamaran and crew','Sparkling wine and poncha','Swim and snorkel gear','Towels on board','Hotel pickup in central Funchal'],
+      gallery:['img/coast-turquoise.jpg','img/yacht-cruise.jpg']}),
   ];
   const bk=[
     {id:uid(), codeStr:code(), expId:experiences[0].id, expTitle:experiences[0].title, hostId:h1, userId:trav, customer:{name:'Mara Lopes',email:'mara@traveler.pt'}, date:'2026-07-04', guests:2, subtotal:190, commission:28.5, payout:161.5, status:'confirmed', createdAt:Date.now()-2e8},
     {id:uid(), codeStr:code(), expId:experiences[2].id, expTitle:experiences[2].title, hostId:h3, userId:null, customer:{name:'Lukas Berg',email:'lukas@example.de'}, date:'2026-06-30', guests:4, subtotal:260, commission:39, payout:221, status:'confirmed', createdAt:Date.now()-1e8},
   ];
   DB.saveUsers(users); DB.saveExperiences(experiences); DB.saveBookings(bk);
-  DB.w('seed_version',4);
+  DB.w('seed_version',5);
 }
 
 /* ============================ HELPERS ============================ */
@@ -1228,7 +1247,8 @@ function acSuggestions(){
 }
 function viewHome(){
   const live=DB.experiences().filter(e=>e.status==='live');
-  const featured=live.slice(0,6);
+  const mustdo=live.filter(e=>e.featured).slice(0,3);
+  const featured=live.filter(e=>!e.featured).slice(0,6);
   return `
   <section class="hero">
     <video class="hero-video" autoplay muted loop playsinline preload="auto" poster="${HERO_POSTER}">
@@ -1264,6 +1284,14 @@ function viewHome(){
       ${CATS.map(c=>'<a class="chip" href="#/explore?cat='+c.id+'"><span class="ic '+c.g+'"></span>'+catLabel(c)+'</a>').join('')}
     </div>
   </div></section>
+
+  ${mustdo.length? `<section class="sec" style="padding-top:8px;padding-bottom:20px"><div class="wrap">
+    <div class="sec-head">
+      <div><span class="eyebrow">${t('mustdo_eyebrow')}</span><h2 class="h-lg" style="margin-top:10px">${t('mustdo_title')}</h2></div>
+      <a class="link-arrow" href="#/explore">${t('feat_seeall')}</a>
+    </div>
+    <div class="grid">${mustdo.map(expCard).join('')}</div>
+  </div></section>`:''}
 
   <section class="sec" style="padding-top:20px"><div class="wrap">
     <div class="sec-head">
@@ -1323,7 +1351,7 @@ function bindHome(){
     const f=qEl.value.toLowerCase().trim();
     let list=acSuggestions();
     if(f) list=list.filter(it=>it.label.toLowerCase().includes(f));
-    list=list.slice(0,8);
+    list=list.slice(0,3);
     if(!list.length){ hideAC(); return; }
     const head = f ? '' : '<div class="ac-head">'+t('feat_eyebrow')+'</div>';
     menu.innerHTML = head + list.map((it,i)=>
